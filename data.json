@@ -81,7 +81,9 @@
       ]
     },
     "user@gmail.com": {
-      "applied_keys": []
+      "applied_keys": [
+        "central-1775831627601"
+      ]
     }
   }
 }
