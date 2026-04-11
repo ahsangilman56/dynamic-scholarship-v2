@@ -522,6 +522,15 @@ input, select { padding: 0.8rem 1rem; border-radius: 10px; border: 1px solid var
             branch: 'main'
         };
 
+        function formatTimeAgo(isoString) {
+            if (!isoString) return <span style={{ opacity: 0.4 }}>Never</span>;
+            const diff = Math.floor((new Date() - new Date(isoString)) / 1000);
+            if (diff < 60) return <span style={{ color: 'var(--success)', fontWeight: '800' }}>Active Now</span>;
+            if (diff < 3600) return <span style={{ color: 'var(--text-mid)', fontWeight: '600' }}>{Math.floor(diff / 60)}m ago</span>;
+            if (diff < 86400) return <span style={{ color: 'var(--text-gray)' }}>{Math.floor(diff / 3600)}h ago</span>;
+            return <span style={{ color: 'var(--text-gray)', fontSize: '0.7rem' }}>{new Date(isoString).toLocaleDateString()}</span>;
+        }
+
         function App() {
             const [view, setView] = useState(() => localStorage.getItem('auth_logged_in') === 'true' ? 'dashboard' : 'landing');
             const [isLoggedIn, setIsLoggedIn] = useState(() => localStorage.getItem('auth_logged_in') === 'true');
@@ -665,14 +674,6 @@ input, select { padding: 0.8rem 1rem; border-radius: 10px; border: 1px solid var
                 a.click();
             };
 
-            function formatTimeAgo(isoString) {
-                if (!isoString) return <span style={{opacity:0.4}}>Never</span>;
-                const diff = Math.floor((new Date() - new Date(isoString)) / 1000);
-                if (diff < 60) return <span style={{color:'var(--success)', fontWeight:'800'}}>Active Now</span>;
-                if (diff < 3600) return <span style={{color:'var(--text-mid)', fontWeight:'600'}}>{Math.floor(diff/60)}m ago</span>;
-                if (diff < 86400) return <span style={{color:'var(--text-gray)'}}>{Math.floor(diff/3600)}h ago</span>;
-                return <span style={{color:'var(--text-gray)', fontSize:'0.7rem'}}>{new Date(isoString).toLocaleDateString()}</span>;
-            }
 
             useEffect(() => {
                 fetchData();
