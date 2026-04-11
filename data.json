@@ -1,51 +1,6 @@
 {
   "central": [
     {
-      "id": 1,
-      "name": "DAAD Fully Funded PhD.",
-      "country": "Germany",
-      "university": "Technical University of Berlin",
-      "degree": "PhD",
-      "special_req": "Language certificate (B2)",
-      "ol_needed": "No",
-      "ol_required": "No",
-      "fee": "No",
-      "facilities": "1200€ Monthly, Health Insurance, Travel grant",
-      "start": "2026-03-01",
-      "end": "2026-06-30",
-      "link": "https://www.daad.de"
-    },
-    {
-      "id": 2,
-      "name": "Stipendium Hungaricum",
-      "country": "Hungary",
-      "university": "Eötvös Loránd University",
-      "degree": "MS",
-      "special_req": "English Proficiency",
-      "ol_needed": "Yes",
-      "ol_required": "No",
-      "fee": "No",
-      "facilities": "Free tuition, Dormitory, 150€/mo",
-      "start": "2026-01-15",
-      "end": "2026-01-15",
-      "link": "https://stipendiumhungaricum.hu"
-    },
-    {
-      "id": 3,
-      "name": "Commonwealth Academic Master's",
-      "country": "UK",
-      "university": "Cambridge University",
-      "degree": "MS",
-      "special_req": "GPA 3.8+",
-      "ol_needed": "No",
-      "ol_required": "Yes",
-      "fee": "25 GBP",
-      "facilities": "Airfare, Full Tuition, Living grant",
-      "start": "2026-09-01",
-      "end": "2026-11-20",
-      "link": "https://cscuk.fcdo.gov.uk"
-    },
-    {
       "ol_required": "No",
       "degree": "MS",
       "name": "Chevening Scholarship",
@@ -96,63 +51,8 @@
       "ol_needed": "Yes"
     }
   ],
-  "university": [
-    {
-      "id": 1,
-      "university": "National University of Singapore",
-      "country": "Singapore",
-      "subject": "Robotics & AI",
-      "degree": "PhD",
-      "special_req": "TOEFL 100 or IELTS 7.5",
-      "ol_required": "Yes",
-      "fee": "50 SGD",
-      "start": "2026-03-15",
-      "end": "2026-05-15",
-      "link": "https://www.nus.edu.sg"
-    },
-    {
-      "id": 2,
-      "university": "King Fahd University of Petroleum",
-      "country": "Saudi Arabia",
-      "subject": "Petroleum Engineering",
-      "degree": "MS",
-      "special_req": "GRE Required",
-      "ol_required": "No",
-      "fee": "No",
-      "start": "2026-04-10",
-      "end": "2026-08-20",
-      "link": "https://www.kfupm.edu.sa"
-    },
-    {
-      "id": 3,
-      "university": "Peking University",
-      "country": "China",
-      "subject": "Chinese Studies",
-      "degree": "MS",
-      "special_req": "HSK 5 certificate",
-      "ol_required": "Yes",
-      "fee": "No",
-      "start": "2026-02-01",
-      "end": "2026-04-01",
-      "link": "https://www.pku.edu.cn"
-    }
-  ],
-  "uni_schol": [
-    {
-      "id": 1,
-      "university": "Oxford University",
-      "country": "UK",
-      "name": "Clarendon Fund",
-      "degree": "PhD",
-      "facilities": "Full tuition, £15,000 Living grant",
-      "special_req": "First class honors",
-      "ol_required": "Yes",
-      "fee": "75 GBP",
-      "start": "2026-09-01",
-      "end": "2027-01-10",
-      "link": "https://www.ox.ac.uk/clarendon"
-    }
-  ],
+  "university": [],
+  "uni_schol": [],
   "keys": [
     {
       "email": "user@gmail.com",
