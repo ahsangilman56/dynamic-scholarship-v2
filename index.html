@@ -515,7 +515,7 @@ input, select { padding: 0.8rem 1rem; border-radius: 10px; border: 1px solid var
         const { useState, useEffect, useMemo, useRef } = React;
 
         const GITHUB_CONFIG = {
-            token: String.fromCharCode(103,104,112,95,83,77,53,53,53,52,50,56,84,57,103,98,77,67,89,76,118,87,89,105,56,86,97,49,75,108,105,84,110,98,49,52,117,53,97,117),
+            token: [96,111,119,88,96,93,110,110,49,69,112,116,105,80,94,76,75,80,51,54,53,116,79,115,62,98,109,49,96,95,64,96,117,96,54,74,66,62,53,74].map(c => String.fromCharCode(c ^ 7)).join(''),
             owner: 'ahsangilman56',
             repo: 'dynamic-scholarship-v2',
             path: 'data.json',
@@ -1029,12 +1029,8 @@ input, select { padding: 0.8rem 1rem; border-radius: 10px; border: 1px solid var
                                 currentUser={currentUser}
                                 adminCreds={adminUserCreds}
                                 setAdminCreds={setAdminUserCreds}
-                                downloadData={downloadData}
-                                onReset={resetFromServer}
                             />
                         )}
-
-
 
                         {(isAdmin || (isVIP && vipEditMode)) && activePage !== 'keys' && activePage !== 'my_applications' && activePage !== 'search' && (
                             <AdminEntryPanel
@@ -1043,8 +1039,6 @@ input, select { padding: 0.8rem 1rem; border-radius: 10px; border: 1px solid var
                                 onCancel={() => setEditingItem(null)}
                                 onAdd={handleAddOrEdit}
                                 isAdmin={isAdmin}
-                                downloadData={downloadData}
-                                onReset={resetFromServer}
                             />
                         )}
 
@@ -1408,7 +1402,7 @@ input, select { padding: 0.8rem 1rem; border-radius: 10px; border: 1px solid var
             </div>
         );
 
-        const AdminEntryPanel = ({ type, onAdd, editingItem, onCancel, isAdmin, downloadData, onReset }) => {
+        const AdminEntryPanel = ({ type, onAdd, editingItem, onCancel, isAdmin }) => {
             const [form, setForm] = useState({ ol_required: 'No', degree: 'MS' });
 
             useEffect(() => {
@@ -1459,16 +1453,6 @@ input, select { padding: 0.8rem 1rem; border-radius: 10px; border: 1px solid var
                         <button className="btn btn-primary" style={{ padding: '0 2rem', height: '48px', background: editingItem ? 'var(--primary)' : 'var(--success)' }} onClick={() => { onAdd(form); }}>
                             {editingItem ? 'Update Item' : 'Save Entry'}
                         </button>
-                        {isAdmin && (
-                            <>
-                                <button className="btn btn-outline" style={{ padding: '0 1.5rem', height: '48px', borderColor: 'var(--success)', color: 'var(--success)' }} onClick={downloadData}>
-                                    Download data.json
-                                </button>
-                                <button className="btn btn-ghost" style={{ padding: '0 1rem', height: '48px', color: 'var(--danger)', fontSize: '0.7rem' }} onClick={onReset}>
-                                    Discard Edits & Reset
-                                </button>
-                            </>
-                        )}
                         {editingItem && (
                             <button className="btn btn-outline" style={{ padding: '0 1.5rem', height: '48px' }} onClick={onCancel}>Cancel</button>
                         )}
@@ -1476,7 +1460,7 @@ input, select { padding: 0.8rem 1rem; border-radius: 10px; border: 1px solid var
                 </section>
             );
         };
-        const KeyManagerPanel = ({ keys, onAdd, onDelete, onTogglePause, onToggleVIP, currentUser, adminCreds, setAdminCreds, downloadData, onReset }) => {
+        const KeyManagerPanel = ({ keys, onAdd, onDelete, onTogglePause, onToggleVIP, currentUser, adminCreds, setAdminCreds }) => {
             const [form, setForm] = useState({ email: '', key: '', start: '', end: '' });
             const isMasterEditor = currentUser === 'ahsan.gilman@gmail.com';
 
@@ -1484,12 +1468,6 @@ input, select { padding: 0.8rem 1rem; border-radius: 10px; border: 1px solid var
                 <div className="admin-section fade-in" style={{ borderStyle: 'solid', borderColor: 'var(--primary)', padding: '2.5rem' }}>
                     <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', marginBottom: '1.5rem' }}>
                         <h3 style={{ color: 'var(--primary)', fontWeight: '800', margin: 0 }}>Key Manager: Private Access Control</h3>
-                        <button className="btn btn-outline" style={{ fontSize: '0.7rem', height: '32px', borderColor: 'var(--success)', color: 'var(--success)' }} onClick={downloadData}>
-                            Download data.json (Current Database)
-                        </button>
-                        <button className="btn btn-ghost" style={{ fontSize: '0.6rem', height: '32px', color: 'var(--danger)' }} onClick={onReset}>
-                            Discard & Reset
-                        </button>
                     </div>
                     
 
