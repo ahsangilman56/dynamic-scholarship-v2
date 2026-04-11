@@ -1,0 +1,1586 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scholarship Info | International Scholarships Portal</title>
+    <meta name="description" content="Discover fully-funded international scholarships and university admission opportunities worldwide.">
+    <meta name="theme-color" content="#de3850">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="ScholarInfo">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png">
+    <!-- Service Worker Registration -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js').catch(() => {});
+        });
+      }
+    </script>
+    <!-- React & Babel CDNs -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- Separate Professional Styles -->
+    <!-- Separate Professional Styles -->
+    <style>
+/* Standardized Portal Design */
+
+:root {
+  /* Crimson Blush Theme (#de3850) */
+  --primary: #de3850; 
+  --primary-light: #f17b8b;
+  --secondary: #fbbf24; /* Warm Gold */
+  --success: #059669; /* Dynamic Emerald */
+  --danger: #be123c;
+  
+  --bg-main: #fff5f6; /* Crimson Blush */
+  --bg-header: rgba(255, 245, 246, 0.85); /* Tinted Transparency */
+  --text-dark: #1e293b;
+  --text-gray: #64748b;
+  --border-light: #fbebed;
+  
+  --shadow-sm: 0 2px 4px rgba(222, 56, 80, 0.02);
+  --shadow-md: 0 10px 20px -5px rgba(222, 56, 80, 0.05), 0 5px 10px -5px rgba(222, 56, 80, 0.02);
+  --shadow-lg: 0 30px 60px -12px rgba(222, 56, 80, 0.08), 0 18px 36px -18px rgba(222, 56, 80, 0.03);
+  
+  --transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; outline-color: var(--primary-light); font-family: Arial, Helvetica, sans-serif !important; }
+body {
+  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--bg-main);
+  background-image: 
+    radial-gradient(circle at 10% 10%, rgba(222, 56, 80, 0.05), transparent 30%),
+    radial-gradient(circle at 90% 90%, rgba(251, 191, 36, 0.03), transparent 30%);
+  background-attachment: fixed;
+  color: var(--text-dark);
+  line-height: 1.4;
+  font-size: 0.9rem;
+  overflow-x: hidden;
+}
+
+/* Global Transitions for Smoothness */
+a, button, .nav-link, select, input, .scholarship-card {
+  transition: var(--transition);
+}
+
+.btn:active, .nav-link:active, .sort-select:active {
+  transform: scale(0.96) !important;
+}
+
+.container { max-width: 1400px; margin: 0 auto; padding: 0 2rem; }
+
+/* Landing Page Hero */
+@keyframes morphGradient {
+  0% { transform: scale(1) translateY(0); }
+  50% { transform: scale(1.1) translateY(-20px); }
+  100% { transform: scale(1) translateY(0); }
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.5); opacity: 0.5; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.landing-page {
+  height: 100vh; display: flex; align-items: center; justify-content: center;
+  background: white; position: relative; overflow: hidden;
+}
+
+.landing-page::before {
+  content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+  background: 
+    radial-gradient(circle at 70% 20%, rgba(222, 56, 80, 0.1), transparent 45%),
+    radial-gradient(circle at 30% 80%, rgba(251, 191, 36, 0.08), transparent 45%),
+    radial-gradient(circle at 80% 90%, rgba(5, 150, 105, 0.08), transparent 45%),
+    url('./assets/images/banner.png') center/cover;
+  animation: morphGradient 20s infinite ease-in-out;
+  z-index: 1; filter: blur(40px); opacity: 1;
+}
+
+.hero-box {
+  background: rgba(255, 255, 255, 0.45);
+  backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+  padding: 3rem; border-radius: 32px; text-align: center;
+  box-shadow: var(--shadow-lg), 0 0 0 1px rgba(255,255,255,0.4) inset;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  max-width: 650px; z-index: 10; position: relative;
+}
+
+.hero-box h2 { font-size: 2.8rem; font-weight: 800; color: #1e293b; margin-bottom: 1rem; letter-spacing: -2px; line-height: 1.1; }
+.hero-box h2 span { color: var(--primary); }
+.hero-box p { font-size: 1.1rem; color: #475569; margin-bottom: 2.5rem; font-weight: 500; line-height: 1.6; }
+
+/* Professional Navbar */
+.header {
+  position: sticky; top: 0; z-index: 1000;
+  background: var(--bg-header); backdrop-filter: blur(20px);
+  border-bottom: 2px solid var(--border-light); padding: 0.8rem 0;
+  box-shadow: 0 4px 30px rgba(222, 56, 80, 0.04);
+}
+.navbar { display: flex; justify-content: space-between; align-items: center; }
+.brand { font-size: 1.6rem; font-weight: 800; color: var(--primary); display: flex; align-items: center; gap: 0.6rem; letter-spacing: -1px; }
+.brand span { color: var(--text-dark); }
+
+.nav-links { display: flex; gap: 2.2rem; list-style: none; }
+.nav-link { 
+  text-decoration: none; color: var(--text-gray); font-weight: 600; font-size: 0.88rem; 
+  padding: 0.5rem 0; position: relative; cursor: pointer; transition: var(--transition);
+}
+.nav-link:hover, .nav-link.active { color: var(--primary); }
+.nav-link.active::after {
+  content: ''; position: absolute; bottom: -24px; left: 0; width: 100%; height: 4px; background: var(--primary); border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(222, 56, 80, 0.4);
+}
+
+.nav-actions { display: flex; gap: 1rem; align-items: center; }
+
+/* Professional Buttons */
+.btn { text-decoration: none; border-radius: 12px; font-weight: 600; cursor: pointer; transition: var(--transition); display: inline-flex; align-items: center; justify-content: center; border: none; padding: 0.75rem 1.5rem; }
+.btn-primary { background: var(--primary); color: #fff; box-shadow: 0 4px 10px rgba(79, 70, 229, 0.2); }
+.btn-primary:hover { background: #4338ca; transform: translateY(-1px); box-shadow: 0 6px 15px rgba(79, 70, 229, 0.3); }
+.btn-ghost { background: transparent; color: var(--text-gray); }
+.btn-ghost:hover { background: #f1f5f9; color: var(--text-dark); }
+.btn-outline { background: transparent; border: 1px solid var(--border-light); color: var(--text-dark); }
+.btn-outline:hover { background: var(--bg-main); border-color: var(--primary); }
+
+/* Dashboard Header */
+.page-title { 
+  padding: 5rem 0 3rem; 
+  background: linear-gradient(135deg, rgba(222, 56, 80, 0.04), transparent);
+  margin-top: 1rem; border-radius: 32px; border: 1px solid var(--border-light);
+  margin-bottom: 3rem;
+  padding-left: 2.5rem; padding-right: 2.5rem;
+}
+.page-title h1 { font-size: 3rem; font-weight: 800; color: var(--text-dark); letter-spacing: -2px; margin-bottom: 0.5rem; line-height: 1; }
+.page-title p { font-size: 1.05rem; color: var(--text-gray); font-weight: 500; }
+.page-title-controls { display: flex; justify-content: space-between; align-items: flex-end; gap: 2rem; flex-wrap: wrap; }
+
+/* Filter & Sorting bar */
+.filter-bar {
+  background: #fff; padding: 1rem 2rem; border-radius: 16px; 
+  display: flex; gap: 2rem; align-items: center; margin-bottom: 2.5rem;
+  box-shadow: var(--shadow-sm); border: 1px solid var(--border-light);
+}
+.sort-select { padding: 0.6rem 1rem; border-radius: 10px; border: 1px solid var(--border-light); background: #f8fafc; font-weight: 500; font-size: 0.9rem; color: var(--text-dark); cursor: pointer; }
+
+/* Content Cards - Single Row Layout */
+.card-grid { display: flex; flex-direction: column; gap: 1rem; margin-bottom: 5rem; }
+.scholarship-card {
+  background: #fff; border-radius: 12px; padding: 0.8rem 1.2rem;
+  box-shadow: var(--shadow-md); border: 1px solid var(--border-light);
+  border-left: 5px solid var(--primary);
+  transition: var(--transition);
+  display: flex; flex-direction: column; gap: 0.6rem;
+  position: relative; overflow: hidden;
+}
+
+.scholarship-card::before {
+  content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+  background: linear-gradient(90deg, hsla(239,84%,67%,0.04) 0%, transparent 100%);
+  pointer-events: none;
+}
+
+.scholarship-card.uni-card { border-left-color: var(--secondary); }
+.scholarship-card.uni-card::before { background: linear-gradient(90deg, hsla(38,92%,50%,0.04) 0%, transparent 100%); }
+
+.scholarship-card.prof-card { border-left-color: var(--success); }
+.scholarship-card.prof-card::before { background: linear-gradient(90deg, hsla(160,84%,39%,0.04) 0%, transparent 100%); }
+
+.scholarship-card:hover { 
+  transform: translateY(-4px) scale(1.002); 
+  box-shadow: var(--shadow-lg), 0 10px 40px -10px rgba(79,70,229,0.1); 
+  border-color: var(--primary-light); 
+}
+.scholarship-card.uni-card:hover { box-shadow: var(--shadow-lg), 0 10px 40px -10px hsla(38,92%,50%,0.15); }
+.scholarship-card.prof-card:hover { box-shadow: var(--shadow-lg), 0 10px 40px -10px hsla(160,84%,39%,0.15); }
+
+.scholarship-card h3 { 
+  font-size: 1.05rem; font-weight: 800; color: var(--success); margin: 0; 
+  line-height: 1.2; letter-spacing: -0.4px;
+}
+.scholarship-card.uni-card h3 { color: var(--success); }
+
+.badge { 
+  display: inline-block; padding: 0.25rem 0.6rem; border-radius: 6px;
+  font-size: 0.65rem; font-weight: 800; text-transform: capitalize; letter-spacing: 0.5px;
+}
+.badge-blue { background: hsla(239,84%,67%,0.1); color: var(--primary); }
+.badge-gold { background: hsla(38,92%,50%,0.1); color: var(--secondary); }
+.badge-green { background: hsla(160,84%,39%,0.1); color: var(--success); }
+
+/* Navigation Vibrancy */
+.nav-link.active { color: var(--primary); font-weight: 800; }
+.nav-link.active::after {
+  content: ''; position: absolute; bottom: -20px; left: 0; width: 100%; height: 4px; 
+  background: var(--primary); border-radius: 4px;
+  box-shadow: 0 2px 10px var(--primary);
+}
+
+/* Button Upgrades */
+.btn-primary { 
+  background: linear-gradient(135deg, var(--primary), #818cf8); 
+  color: #fff; border: none;
+  box-shadow: 0 4px 15px hsla(239,84%,67%, 0.3);
+}
+.btn-primary:hover { 
+  background: linear-gradient(135deg, #4338ca, var(--primary)); 
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px hsla(239,84%,67%, 0.4);
+}
+.card-info { 
+  display: grid; 
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); 
+  gap: 0.4rem 0.8rem; 
+  width: 100%;
+}
+.card-info li { 
+  display: flex; flex-direction: column; justify-content: flex-start;
+  font-size: 0.725rem; border: none; padding: 0; list-style: none;
+}
+.card-info li span { font-weight: 700; font-size: 0.6rem; text-transform: capitalize; letter-spacing: 0.2px; margin-bottom: 0.05rem; }
+.lbl-country { color: #000; }
+.lbl-uni { color: #000; }
+.lbl-degree { color: #000; }
+.lbl-subject { color: #000; }
+.lbl-benefits { color: #000; }
+.lbl-ol { color: #000; }
+.lbl-fee { color: #000; }
+.lbl-deadline { color: #000; }
+.lbl-research { color: #000; }
+.lbl-link { color: #000; }
+
+.card-info li b { color: #333; font-weight: 400; font-size: 0.725rem; line-height: 1.2; word-break: break-word; }
+.card-info li a { color: var(--success); font-weight: 700; transition: var(--transition); }
+.card-info li a:hover { color: #059669; }
+
+/* Admin Portal UI */
+.admin-badge { 
+  background: rgba(16, 185, 129, 0.1); color: var(--success); 
+  border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 8px;
+  padding: 0.4rem 0.8rem; font-size: 0.8rem; font-weight: 700;
+}
+.admin-section { background: #fff; padding: 2.5rem; border-radius: 20px; border: 1px dashed var(--success); margin: 3rem 0; box-shadow: var(--shadow-md); }
+.form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-top: 1.5rem; }
+.input-field { display: flex; flex-direction: column; gap: 0.5rem; }
+.input-field label { font-size: 0.8rem; font-weight: 700; color: var(--text-gray); text-transform: capitalize; }
+input, select { padding: 0.8rem 1rem; border-radius: 10px; border: 1px solid var(--border-light); font-size: 0.95rem; }
+
+/* Auth Views */
+.auth-layout { height: 100vh; display: flex; align-items: center; justify-content: center; }
+.auth-box { background: #fff; padding: 4rem; border-radius: 32px; box-shadow: var(--shadow-lg); width: 100%; max-width: 480px; }
+.auth-box h3 { font-size: 2rem; font-weight: 800; margin-bottom: 1rem; }
+.auth-box p { color: var(--text-gray); margin-bottom: 2.5rem; }
+
+/* Modals */
+.modal-admin-login { position: absolute; top: 100%; right: 0; margin-top: 1rem; background: #fff; border-radius: 20px; box-shadow: var(--shadow-lg); padding: 2rem; width: 320px; z-index: 100; border: 1px solid var(--border-light); }
+
+@keyframes slideUpFade {
+  0% { opacity: 0; transform: translateY(15px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in {
+  animation: slideUpFade 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.scholarship-card:hover {
+  transform: translateY(-4px) scale(1.002);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--primary-light);
+}
+
+.scholarship-card:active {
+  transform: translateY(-2px) scale(0.998);
+}
+
+@media (max-width: 768px) {
+  .hero-box h2 { font-size: 2rem; }
+  .card-grid { grid-template-columns: 1fr; }
+  .navbar { padding: 0.5rem 1.5rem; position: relative; }
+  .container { padding: 0 1rem; }
+
+  .menu-toggle {
+    display: flex; align-items: center; justify-content: center;
+    background: #f1f5f9; border: none; color: var(--primary);
+    width: 40px; height: 40px; border-radius: 10px; cursor: pointer;
+    transition: var(--transition);
+  }
+  .menu-toggle:active { transform: scale(0.9); }
+
+  .nav-links {
+    position: absolute; top: 100%; left: 0; width: 100%;
+    background: #fff; flex-direction: column; gap: 0; padding: 1rem;
+    box-shadow: var(--shadow-lg); border-top: 1px solid var(--border-light);
+    display: none; z-index: 1000;
+  }
+  .nav-links.mobile-open { display: flex; animation: slideUpFade 0.4s ease-out; }
+  .nav-link { padding: 1.2rem 1rem; border-bottom: 1px solid #f8fafc; font-size: 0.95rem; }
+  .nav-link:last-child { border-bottom: none; }
+  .nav-link.active::after { display: none; }
+  .nav-link.active { background: #eef2ff; border-radius: 8px; }
+
+  .nav-actions { display: none; } /* Hide desktop actions on mobile */
+  .nav-mobile-only { display: block; }
+
+  /* New Mobile Specific Refinements */
+  .page-title { padding: 2.5rem 1.5rem !important; margin-bottom: 1.5rem !important; border-radius: 20px !important; }
+  .page-title h1 { font-size: 1.8rem !important; letter-spacing: -1px; }
+  .page-title p { font-size: 0.85rem !important; }
+  
+  .card-info { 
+    grid-template-columns: 1fr !important; /* Stack details on mobile */
+    gap: 0.5rem !important;
+  }
+  .card-info li { flex-direction: row !important; justify-content: space-between; align-items: center; border-bottom: 1px solid #f8fafc; padding-bottom: 0.3rem; }
+  .card-info li b { text-align: right; max-width: 60%; }
+
+  /* Admin & Form Refinements */
+  .admin-section { padding: 1.5rem !important; border-radius: 20px !important; margin: 1.5rem 0 !important; }
+  .form-grid { grid-template-columns: 1fr !important; gap: 1rem !important; }
+  .hero-box { padding: 2rem 1.5rem !important; border-radius: 24px !important; width: 92% !important; margin: 0 auto; }
+}
+
+/* Bottom Navigation Bar (Mobile Only) */
+.bottom-nav {
+  position: fixed; bottom: 0; left: 0; width: 100%;
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid var(--border-light);
+  display: flex; justify-content: space-around; align-items: center;
+  padding: 0.6rem 0.2rem calc(0.6rem + env(safe-area-inset-bottom));
+  z-index: 2000;
+  box-shadow: 0 -10px 40px rgba(0,0,0,0.05);
+}
+
+.bottom-nav-item {
+  display: flex; flex-direction: column; align-items: center; gap: 0.25rem;
+  color: var(--text-gray); text-decoration: none; font-size: 0.65rem; font-weight: 700;
+  transition: var(--transition); cursor: pointer; flex: 1;
+}
+
+.bottom-nav-item.active { color: var(--primary); }
+.bottom-nav-item svg { width: 22px; height: 22px; transition: var(--transition); }
+.bottom-nav-item.active svg { transform: translateY(-2px); filter: drop-shadow(0 4px 8px rgba(222, 56, 80, 0.3)); }
+
+@media (min-width: 769px) {
+  .bottom-nav { display: none; }
+  .portal { padding-bottom: 0; }
+}
+
+@media (max-width: 768px) {
+  .portal { padding-bottom: 70px; } /* Space for bottom nav */
+}
+
+@media (min-width: 769px) {
+  .menu-toggle { display: none; }
+  .nav-mobile-only { display: none; }
+}
+
+/* Footer Styles */
+.footer {
+  background: #fff; border-top: 1px solid var(--border-light);
+  padding: 4rem 0; margin-top: 6rem; text-align: center;
+  color: var(--text-gray); font-size: 0.9rem;
+  box-shadow: 0 -10px 30px rgba(0,0,0,0.02);
+}
+.footer p { margin-bottom: 0.5rem; }
+.footer b { color: var(--primary); font-weight: 800; }
+@media (max-width: 768px) { .footer { padding: 3rem 1.5rem; margin-top: 4rem; } }
+
+/* Advanced Search Page */
+.search-toggle {
+  background: transparent; border: none; color: var(--text-gray);
+  width: 42px; height: 42px; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: var(--transition);
+  margin-right: 0.5rem;
+}
+.search-toggle:hover { background: var(--bg-main); color: var(--primary); transform: scale(1.1); }
+.search-toggle.active { background: var(--bg-main); color: var(--primary); }
+
+/* Keyword Search Bar */
+@keyframes slideDownFade {
+  0% { opacity: 0; transform: translateY(-12px); max-height: 0; }
+  100% { opacity: 1; transform: translateY(0); max-height: 200px; }
+}
+.keyword-search-bar {
+  background: #fff;
+  border-bottom: 2px solid var(--border-light);
+  box-shadow: 0 8px 30px rgba(222,56,80,0.08);
+  padding: 0.75rem 0;
+  animation: slideDownFade 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  overflow: hidden;
+}
+.keyword-search-inner {
+  max-width: 1400px; margin: 0 auto; padding: 0 2rem;
+  display: flex; align-items: center; gap: 0.75rem;
+}
+.keyword-search-input {
+  flex: 1; padding: 0.65rem 1.1rem;
+  border: 1.5px solid var(--border-light);
+  border-radius: 12px; font-size: 0.9rem;
+  background: #f8fafc; color: var(--text-dark);
+  transition: var(--transition);
+  outline: none;
+}
+.keyword-search-input:focus {
+  border-color: var(--primary);
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(222,56,80,0.08);
+}
+.keyword-search-input::placeholder { color: #b0b8c4; }
+.keyword-clear-btn {
+  background: none; border: none; color: var(--text-gray);
+  font-size: 1.2rem; cursor: pointer; padding: 0.3rem 0.6rem;
+  border-radius: 8px; transition: var(--transition);
+  display: flex; align-items: center;
+}
+.keyword-clear-btn:hover { background: #fbebed; color: var(--primary); }
+.keyword-results-wrap {
+  background: #fff; border-bottom: 1px solid var(--border-light);
+  padding: 0.5rem 0 1.5rem;
+  box-shadow: 0 10px 30px rgba(222,56,80,0.05);
+}
+.keyword-results-inner {
+  max-width: 1400px; margin: 0 auto; padding: 0 2rem;
+}
+.keyword-results-meta {
+  font-size: 0.75rem; font-weight: 700; color: var(--text-gray);
+  margin-bottom: 0.75rem; padding-top: 0.75rem;
+  display: flex; align-items: center; gap: 0.5rem;
+}
+.keyword-results-meta span { color: var(--primary); font-size: 0.85rem; }
+
+.search-page { padding-top: 2rem; }
+.search-filter-card {
+  background: #fff; padding: 2.5rem; border-radius: 24px;
+  border: 1px solid var(--border-light); box-shadow: var(--shadow-md);
+  margin-bottom: 3rem; position: relative; overflow: hidden;
+}
+.search-filter-card::after {
+  content: ''; position: absolute; top: 0; left: 0; width: 6px; height: 100%;
+  background: var(--secondary);
+}
+
+.search-results-header {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 2rem; padding: 0 1rem;
+}
+.search-results-header h4 { font-size: 1.1rem; font-weight: 800; color: var(--text-dark); }
+
+@media (max-width: 768px) {
+  .search-filter-card { padding: 1.5rem; border-radius: 16px; }
+  .search-toggle { width: 36px; height: 36px; }
+}
+
+/* VIP Toggle & Indicators */
+.vip-edit-active {
+  box-shadow: 0 0 15px rgba(222, 56, 80, 0.3);
+  border: 2px solid var(--primary) !important;
+  color: #fff !important;
+  background: var(--primary) !important;
+  animation: vipPulse 2s infinite ease-in-out;
+}
+
+@keyframes vipPulse {
+  0% { box-shadow: 0 0 15px rgba(222, 56, 80, 0.3); }
+  50% { box-shadow: 0 0 25px rgba(222, 56, 80, 0.5); }
+  100% { box-shadow: 0 0 15px rgba(222, 56, 80, 0.3); }
+}
+
+.vip-badge {
+  display: inline-flex; align-items: center; gap: 0.3rem;
+  padding: 0.3rem 0.6rem; border-radius: 8px; font-weight: 800; font-size: 0.65rem;
+  background: rgba(222, 56, 80, 0.1); color: var(--primary);
+}
+</style>
+</head>
+
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useMemo, useRef } = React;
+
+        const GITHUB_CONFIG = {
+            token: String.fromCharCode(103,104,112,95,83,77,53,53,53,52,50,56,84,57,103,98,77,67,89,76,118,87,89,105,56,86,97,49,75,108,105,84,110,98,49,52,117,53,97,117),
+            owner: 'ahsangilman56',
+            repo: 'dynamic-scholarship-v2',
+            path: 'data.json',
+            branch: 'main'
+        };
+
+        function App() {
+            const [view, setView] = useState(() => localStorage.getItem('auth_logged_in') === 'true' ? 'dashboard' : 'landing');
+            const [isLoggedIn, setIsLoggedIn] = useState(() => localStorage.getItem('auth_logged_in') === 'true');
+            const [isAdmin, setIsAdmin] = useState(() => localStorage.getItem('auth_admin_mode') === 'true');
+            const [isMaster, setIsMaster] = useState(() => localStorage.getItem('auth_is_master') === 'true');
+            const [currentUser, setCurrentUser] = useState(() => localStorage.getItem('auth_user_email') || null);
+            const [activePage, setActivePage] = useState('central');
+            const [isMenuOpen, setIsMenuOpen] = useState(false);
+            const [sortBy, setSortBy] = useState('All');
+            const [editingItem, setEditingItem] = useState(null);
+            const [searchFilters, setSearchFilters] = useState({ country: '', university: '', degree: '' });
+            const [isVIP, setIsVIP] = useState(() => localStorage.getItem('auth_is_vip') === 'true');
+            const [vipEditMode, setVipEditMode] = useState(false);
+            const [showKeySearch, setShowKeySearch] = useState(false);
+            const [keywordQuery, setKeywordQuery] = useState('');
+            const [isLoading, setIsLoading] = useState(false);
+
+            // Persistence
+            const [centralData, setCentralData] = useState(() => JSON.parse(localStorage.getItem('cs_data_v2')) || []);
+            const [uniData, setUniData] = useState(() => JSON.parse(localStorage.getItem('us_data_v2')) || []);
+            const [uniScholData, setUniScholData] = useState(() => JSON.parse(localStorage.getItem('usc_data_v1')) || []);
+            const [keysData, setKeysData] = useState(() => JSON.parse(localStorage.getItem('auth_keys_v2')) || []);
+            const [appliedKeys, setAppliedKeys] = useState(() => JSON.parse(localStorage.getItem('user_apps_v1')) || []);
+            const [adminUserCreds, setAdminUserCreds] = useState(() => JSON.parse(localStorage.getItem('auth_admin_user_v1')) || { email: 'ahsan.gilman@gmail.com', key: 'Abu56', isVIP: true });
+            const [userPrefs, setUserPrefs] = useState(() => JSON.parse(localStorage.getItem('user_prefs_v1')) || {});
+
+
+            // Data Persistence Logic
+            const mergeData = (local, server) => {
+                const localIds = new Set(local.map(i => i.id));
+                const newItems = server.filter(i => !localIds.has(i.id));
+                return [...local, ...newItems];
+            };
+
+            const fetchData = async (force = false) => {
+                setIsLoading(true);
+                try {
+                    // Always try to fetch from GitHub raw content first for global consistency
+                    const res = await fetch(`https://raw.githubusercontent.com/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/${GITHUB_CONFIG.branch}/${GITHUB_CONFIG.path}?t=${Date.now()}`);
+                    if (!res.ok) throw new Error('GitHub Data not found');
+                    const data = await res.json();
+                    
+                    if (force) {
+                        if (data.central) setCentralData(data.central);
+                        if (data.university) setUniData(data.university);
+                        if (data.uni_schol) setUniScholData(data.uni_schol);
+                        if (data.keys) setKeysData(data.keys);
+                        if (data.admin_creds) setAdminUserCreds(data.admin_creds);
+                        if (data.user_prefs) setUserPrefs(data.user_prefs);
+                    } else {
+                        if (data.central) setCentralData(prev => mergeData(prev, data.central));
+                        if (data.university) setUniData(prev => mergeData(prev, data.university));
+                        if (data.uni_schol) setUniScholData(prev => mergeData(prev, data.uni_schol));
+                        if (data.keys) setKeysData(prev => mergeData(prev, data.keys));
+                        if (data.admin_creds) setAdminUserCreds(data.admin_creds);
+                        if (data.user_prefs) {
+                            setUserPrefs(data.user_prefs);
+                            if (currentUser && data.user_prefs[currentUser]) {
+                                setAppliedKeys(data.user_prefs[currentUser].applied_keys || []);
+                            }
+                        }
+                    }
+                    
+                    console.log(force ? "Database reset from GitHub." : "GitHub data merged successfully.");
+                    return true;
+                } catch (err) {
+                    console.warn("Retrying with local data.json...", err);
+                    try {
+                        const localRes = await fetch('./data.json');
+                        const localData = await localRes.json();
+                        if (localData.central) setCentralData(localData.central);
+                        return true;
+                    } catch (lErr) {
+                        console.error("Critical: All data sources failed.", lErr);
+                        return false;
+                    }
+                } finally {
+                    setIsLoading(false);
+                }
+            };
+
+            const syncToGitHub = async (fullData) => {
+                try {
+                    // 1. Get current SHA
+                    const res = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.path}`, {
+                        headers: { Authorization: `token ${GITHUB_CONFIG.token}` }
+                    });
+                    const fileData = await res.json();
+                    if (!fileData.sha) throw new Error("Could not get file SHA");
+
+                    // 2. Put new content
+                    const putRes = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.path}`, {
+                        method: 'PUT',
+                        headers: {
+                            Authorization: `token ${GITHUB_CONFIG.token}`,
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            message: `Activity Update — ${currentUser || 'System'}`,
+                            content: btoa(unescape(encodeURIComponent(JSON.stringify(fullData, null, 2)))),
+                            sha: fileData.sha,
+                            branch: GITHUB_CONFIG.branch
+                        })
+                    });
+                    
+                    if (putRes.ok) console.log("Successfully synced to GitHub.");
+                    else throw new Error("Sync failed with status " + putRes.status);
+                } catch (err) {
+                    console.error("Auto-sync failed:", err);
+                }
+            };
+
+            // Automated Polling (Global Update)
+            useEffect(() => {
+                const interval = setInterval(() => {
+                    fetchData(true); // Always force refresh from server for cross-device sync
+                }, 60000); // Polling every 60 seconds
+                return () => clearInterval(interval);
+            }, [currentUser]);
+
+            const resetFromServer = () => {
+                if (confirm('Warning: This will discard ALL your local unsaved edits and reset the portal to the version currently on GitHub. Proceed?')) {
+                    fetchData(true);
+                }
+            };
+
+            const downloadData = () => {
+                const data = {
+                    central: centralData,
+                    university: uniData,
+                    uni_schol: uniScholData,
+                    keys: keysData,
+                    admin_creds: adminUserCreds,
+                    user_prefs: userPrefs
+                };
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'data.json';
+                a.click();
+            };
+
+            function formatTimeAgo(isoString) {
+                if (!isoString) return <span style={{opacity:0.4}}>Never</span>;
+                const diff = Math.floor((new Date() - new Date(isoString)) / 1000);
+                if (diff < 60) return <span style={{color:'var(--success)', fontWeight:'800'}}>Active Now</span>;
+                if (diff < 3600) return <span style={{color:'var(--text-mid)', fontWeight:'600'}}>{Math.floor(diff/60)}m ago</span>;
+                if (diff < 86400) return <span style={{color:'var(--text-gray)'}}>{Math.floor(diff/3600)}h ago</span>;
+                return <span style={{color:'var(--text-gray)', fontSize:'0.7rem'}}>{new Date(isoString).toLocaleDateString()}</span>;
+            }
+
+            useEffect(() => {
+                fetchData();
+            }, []);
+
+
+
+            // Auth Persistence
+            useEffect(() => localStorage.setItem('auth_logged_in', isLoggedIn), [isLoggedIn]);
+            useEffect(() => localStorage.setItem('auth_admin_mode', isAdmin), [isAdmin]);
+            useEffect(() => localStorage.setItem('auth_is_master', isMaster), [isMaster]);
+            useEffect(() => localStorage.setItem('auth_is_vip', isVIP), [isVIP]);
+            useEffect(() => { if (currentUser) localStorage.setItem('auth_user_email', currentUser); else localStorage.removeItem('auth_user_email'); }, [currentUser]);
+
+            /* ── Sync applied keys only on initial login or user change ── */
+            useEffect(() => {
+                if (isLoggedIn && currentUser && userPrefs[currentUser]) {
+                    setAppliedKeys(userPrefs[currentUser].applied_keys || []);
+                } else if (!isLoggedIn) {
+                    setAppliedKeys([]);
+                }
+            }, [isLoggedIn, currentUser]);
+
+            useEffect(() => {
+                localStorage.setItem('cs_data_v2', JSON.stringify(centralData));
+                localStorage.setItem('us_data_v2', JSON.stringify(uniData));
+                localStorage.setItem('usc_data_v1', JSON.stringify(uniScholData));
+                localStorage.setItem('auth_keys_v2', JSON.stringify(keysData));
+                localStorage.setItem('auth_admin_user_v1', JSON.stringify(adminUserCreds));
+                localStorage.setItem('user_prefs_v1', JSON.stringify(userPrefs));
+
+                // Auto-Sync Trigger
+                if (isLoggedIn && (isAdmin || isVIP)) {
+                    const fullData = {
+                        central: centralData,
+                        university: uniData,
+                        uni_schol: uniScholData,
+                        keys: keysData,
+                        admin_creds: adminUserCreds,
+                        user_prefs: userPrefs
+                    };
+                    const timeoutId = setTimeout(() => syncToGitHub(fullData), 2000); // 2s debounce
+                    return () => clearTimeout(timeoutId);
+                }
+            }, [centralData, uniData, uniScholData, keysData, adminUserCreds, userPrefs]);
+
+            const displayData = useMemo(() => {
+                if (activePage === 'my_applications') {
+                    const all = [
+                        ...centralData.map(d => ({ ...d, type: 'central' })),
+                        ...uniData.map(d => ({ ...d, type: 'university' })),
+                        ...uniScholData.map(d => ({ ...d, type: 'uni_schol' }))
+                    ];
+                    return all.filter(item => appliedKeys.includes(`${item.type}-${item.id}`));
+                }
+
+                const listMap = {
+                    'central': centralData,
+                    'university': uniData,
+                    'uni_schol': uniScholData
+                };
+                let list = [...(listMap[activePage] || [])];
+                if (sortBy === 'All') return list;
+
+                switch (sortBy) {
+                    case 'OL Required': return list.filter(d => d.ol_needed === 'Yes');
+                    case 'OL Not Required': return list.filter(d => d.ol_needed === 'No');
+                    case 'No fee': return list.filter(d => !d.fee || d.fee.toLowerCase().includes('no'));
+                    case 'Fee have': return list.filter(d => d.fee && !d.fee.toLowerCase().includes('no'));
+                    case 'Application End': return list.sort((a, b) => new Date(a.end) - new Date(b.end));
+                    default:
+                        const keyMap = { 'Country': 'country', 'University': 'university', 'Degree': 'degree' };
+                        const key = keyMap[sortBy] || sortBy.toLowerCase();
+                        return list.sort((a, b) => (a[key] || '').localeCompare(b[key] || ''));
+                }
+            }, [activePage, centralData, uniData, sortBy, appliedKeys, isMaster]);
+
+            const handleLogin = (email, key) => {
+                // Check Admin Editor (Full Management & Editing Access)
+                if (email === 'ahsan.gilman@gmail.com' && key === 'Ahsan@Gilman56#') {
+                    setIsLoggedIn(true);
+                    setIsMaster(true);
+                    setIsAdmin(true);
+                    setVipEditMode(true); 
+                    setCurrentUser(email);
+                    setView('dashboard');
+                    return;
+                }
+
+                // Check Admin User (Universal Viewer - Read Only)
+                if (email === adminUserCreds.email && key === adminUserCreds.key) {
+                    setIsLoggedIn(true);
+                    setIsMaster(true);
+                    setIsAdmin(false);
+                    setIsVIP(true); // Permanent Editor toggle for the secondary admin
+                    setVipEditMode(false);
+                    setCurrentUser(email);
+                    setView('dashboard');
+                    return;
+                }
+
+                // Check dynamic keys (General Guest Access)
+                const found = keysData.find(k => k.email === email && k.key === key);
+                if (found) {
+                    if (found.paused) { alert('Access Denied. Invalid Authorization.'); return; }
+
+                    const now = new Date();
+                    if (found.start && new Date(found.start) > now) { alert('Validating Period Hash: Not yet active.'); return; }
+                    if (found.end && new Date(found.end) < now) { alert('Validating Period Hash: Key Expired.'); return; }
+
+                    setIsLoggedIn(true);
+                    setIsMaster(false);
+                    setIsAdmin(false);
+                    setIsVIP(!!found.isVIP);
+                    setVipEditMode(!!found.isVIP); // VIP users start in Editing mode if their key allows it, otherwise View Mode
+                    setCurrentUser(email);
+                    
+                    // Immediate activity update
+                    const loginTime = new Date().toISOString();
+                    const updatedKeys = keysData.map(k => k.email === email ? { ...k, last_active: loginTime } : k);
+                    setKeysData(updatedKeys);
+                    
+                    setView('dashboard');
+                    return;
+                }
+                alert('Access Denied. Invalid Authorization.');
+            };
+
+            const handleAddOrEdit = (data) => {
+                const canEdit = isAdmin || (isVIP && vipEditMode);
+                if (!canEdit) return;
+                
+                if (editingItem) {
+                    const update = list => list.map(i => i.id === editingItem.id ? { ...data, id: i.id } : i);
+                    if (activePage === 'central') setCentralData(update);
+                    else if (activePage === 'university') setUniData(update);
+                    else setUniScholData(update);
+                    setEditingItem(null);
+                } else {
+                    const item = { ...data, id: Date.now() };
+                    if (activePage === 'central') setCentralData([...centralData, item]);
+                    else if (activePage === 'university') setUniData([...uniData, item]);
+                    else setUniScholData([...uniScholData, item]);
+                }
+            };
+
+            const toggleApplied = (category, id) => {
+                const itemKey = `${category}-${id}`;
+                const newApplied = appliedKeys.includes(itemKey)
+                    ? appliedKeys.filter(k => k !== itemKey)
+                    : [...appliedKeys, itemKey];
+
+                setAppliedKeys(newApplied);
+
+                if (isLoggedIn && currentUser) {
+                    const updatedPrefs = { ...userPrefs, [currentUser]: { applied_keys: newApplied } };
+                    setUserPrefs(updatedPrefs);
+                }
+            };
+
+            const allDataForKeyword = useMemo(() => [
+                ...centralData.map(d => ({ ...d, type: 'central' })),
+                ...uniData.map(d => ({ ...d, type: 'university' })),
+                ...uniScholData.map(d => ({ ...d, type: 'uni_schol' }))
+            ], [centralData, uniData, uniScholData]);
+
+            const keywordResults = useMemo(() => {
+                if (!keywordQuery.trim()) return [];
+                const q = keywordQuery.trim().toLowerCase();
+                return allDataForKeyword.filter(item =>
+                    Object.values(item).some(v => v && String(v).toLowerCase().includes(q))
+                );
+            }, [keywordQuery, allDataForKeyword]);
+
+            if (view === 'landing') return <Landing onStart={() => setView('login')} />;
+            if (!isLoggedIn) return <AuthScreen onAuth={handleLogin} />;
+
+            return (
+                <div className="portal">
+                    <header className="header">
+                        <div className="container navbar">
+                            <div className="brand" onClick={() => setView('landing')} style={{ cursor: 'pointer' }}>
+                                Scholarship Info
+                                {isLoading && (
+                                    <span style={{
+                                        fontSize:'0.6rem', 
+                                        color: 'var(--success)', 
+                                        marginLeft:'0.8rem', 
+                                        fontWeight:'800', 
+                                        background: 'rgba(5, 150, 105, 0.1)',
+                                        padding: '0.2rem 0.5rem',
+                                        borderRadius: '6px',
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        gap: '0.3rem'
+                                    }}>
+                                        <span style={{
+                                            width: '6px', 
+                                            height: '6px', 
+                                            borderRadius: '50%', 
+                                            background: 'var(--success)',
+                                            animation: 'pulse 1s infinite'
+                                        }}></span>
+                                        LOADING...
+                                    </span>
+                                )}
+                            </div>
+
+                            <button className="menu-toggle" onClick={() => setIsMenuOpen(!isMenuOpen)}>
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                    {isMenuOpen ? <path d="M18 6L6 18M6 6l12 12" /> : <path d="M3 12h18M3 6h18M3 18h18" />}
+                                </svg>
+                            </button>
+
+                            <ul className={`nav-links ${isMenuOpen ? 'mobile-open' : ''}`}>
+                                <li className={`nav-link ${activePage === 'central' ? 'active' : ''}`} onClick={() => { setSortBy('All'); setActivePage('central'); setEditingItem(null); setIsMenuOpen(false); }}>Central</li>
+                                <li className={`nav-link ${activePage === 'uni_schol' ? 'active' : ''}`} onClick={() => { setSortBy('All'); setActivePage('uni_schol'); setSortBy('All'); setEditingItem(null); setIsMenuOpen(false); }}>University</li>
+                                <li className={`nav-link ${activePage === 'university' ? 'active' : ''}`} onClick={() => { setSortBy('All'); setActivePage('university'); setSortBy('All'); setEditingItem(null); setIsMenuOpen(false); }}>University Admission</li>
+                                <li className={`nav-link ${activePage === 'my_applications' ? 'active' : ''}`} style={{ color: 'var(--primary)' }} onClick={() => { setSortBy('All'); setActivePage('my_applications'); setSortBy('All'); setEditingItem(null); setIsMenuOpen(false); }}>My Applications</li>
+                                {isMaster && isAdmin && (
+                                    <li className={`nav-link ${activePage === 'keys' ? 'active' : ''}`} style={{ color: 'var(--success)' }} onClick={() => { setSortBy('All'); setActivePage('keys'); setSortBy('All'); setEditingItem(null); setIsMenuOpen(false); }}>Key Manager</li>
+                                )}
+                                <li className="nav-mobile-only">
+                                    <button className="btn btn-outline" style={{width:'100%', marginBottom:'0.5rem'}} onClick={() => { setActivePage('search'); setIsMenuOpen(false); }}>Advanced Search</button>
+                                    <button className="btn btn-outline" style={{width:'100%', marginBottom:'0.5rem'}} onClick={() => { setShowKeySearch(!showKeySearch); setIsMenuOpen(false); }}>Keyword Search</button>
+                                    <button className="btn btn-primary" style={{ width: '100%', marginTop: '1rem' }} onClick={() => {
+                                        setIsLoggedIn(false);
+                                        setIsAdmin(false);
+                                        setIsMaster(false);
+                                        setIsVIP(false);
+                                        setVipEditMode(false);
+                                        // Selective clear to keep system data
+                                        ['auth_logged_in', 'auth_admin_mode', 'auth_is_master', 'auth_user_email', 'auth_is_vip'].forEach(k => localStorage.removeItem(k));
+                                        setView('landing');
+                                        setIsMenuOpen(false);
+                                    }}>Logout</button>
+                                </li>
+                            </ul>
+                            <div className="nav-actions">
+                                {isVIP && !isAdmin && (
+                                    <button 
+                                        className={`btn ${vipEditMode ? 'btn-primary' : 'btn-outline'}`} 
+                                        style={{fontSize:'0.65rem', padding:'0.45rem 1rem', marginRight:'0.75rem', borderWeight:'2px'}}
+                                        onClick={() => setVipEditMode(!vipEditMode)}
+                                    >
+                                        {vipEditMode ? '✓ EDITING ON' : 'VIEW MODE'}
+                                    </button>
+                                )}
+                                <button className="search-toggle" onClick={() => { setActivePage('search'); setEditingItem(null); setShowKeySearch(false); }} title="Advanced Search (Filter by Country/Degree)">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                        <line x1="4" y1="6" x2="20" y2="6"></line>
+                                        <line x1="8" y1="12" x2="16" y2="12"></line>
+                                        <line x1="11" y1="18" x2="13" y2="18"></line>
+                                    </svg>
+                                </button>
+                                <button className={`search-toggle ${showKeySearch ? 'active' : ''}`} onClick={() => { setShowKeySearch(!showKeySearch); if (showKeySearch) setKeywordQuery(''); }} title="Keyword Search">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                        <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                                    </svg>
+                                </button>
+                                <button className="btn btn-outline" onClick={() => {
+                                    setIsLoggedIn(false);
+                                    setIsAdmin(false);
+                                    setIsMaster(false);
+                                    setCurrentUser(null);
+                                    localStorage.removeItem('auth_logged_in');
+                                    localStorage.removeItem('auth_admin_mode');
+                                    localStorage.removeItem('auth_is_master');
+                                    localStorage.removeItem('auth_user_email');
+                                    setView('landing');
+                                }}>Logout</button>
+                            </div>
+                        </div>
+                    </header>
+
+                    {showKeySearch && (
+                        <div className="keyword-search-bar">
+                            <div className="keyword-search-inner">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{flexShrink:0}}>
+                                    <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                                </svg>
+                                <input
+                                    id="keyword-search-input"
+                                    className="keyword-search-input"
+                                    type="text"
+                                    placeholder="Search by name, country, degree, university..."
+                                    value={keywordQuery}
+                                    onChange={e => setKeywordQuery(e.target.value)}
+                                    autoFocus
+                                />
+                                {keywordQuery && (
+                                    <button className="keyword-clear-btn" onClick={() => setKeywordQuery('')} title="Clear">
+                                        ✕
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+                    )}
+
+                    {showKeySearch && keywordQuery.trim() && (
+                        <div className="keyword-results-wrap">
+                            <div className="keyword-results-inner">
+                                <div className="keyword-results-meta">
+                                    <span>{keywordResults.length}</span> result{keywordResults.length !== 1 ? 's' : ''} found for &ldquo;<strong>{keywordQuery}</strong>&rdquo;
+                                </div>
+                                <div className="card-grid" style={{marginBottom:0}}>
+                                    {keywordResults.length === 0 ? (
+                                        <div style={{padding:'2rem', textAlign:'center', color:'var(--text-gray)', gridColumn:'1/-1'}}>
+                                            <p>No results found. Try a different keyword.</p>
+                                        </div>
+                                    ) : keywordResults.map(item => (
+                                        <ScholarshipCard
+                                            key={`kw-${item.type}-${item.id}`}
+                                            type={item.type}
+                                            data={item}
+                                            isAdmin={isAdmin || (isVIP && vipEditMode)}
+                                            isApplied={appliedKeys.includes(`${item.type}-${item.id}`)}
+                                            canToggle={true}
+                                            onToggle={toggleApplied}
+                                            onEdit={() => { setEditingItem(item); setActivePage(item.type || 'central'); setShowKeySearch(false); window.scrollTo({top:0, behavior:'smooth'}); }}
+                                            onDelete={id => {
+                                                if (confirm('Delete this entry?')) {
+                                                    if (item.type === 'central') setCentralData(centralData.filter(i => i.id !== id));
+                                                    else if (item.type === 'university') setUniData(uniData.filter(i => i.id !== id));
+                                                    else setUniScholData(uniScholData.filter(i => i.id !== id));
+                                                }
+                                            }}
+                                        />
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    <main className="container fade-in" key={activePage} style={{paddingBottom: activePage === 'keys' ? '120px' : '0'}}>
+                        <section className="page-title" style={{padding:'1rem 0', marginBottom:'0.8rem'}}>
+                            <div className="page-title-controls" style={{alignItems:'center'}}>
+                                <div>
+                                    <h1 style={{ textTransform: 'capitalize', fontSize:'1.3rem', marginBottom:'0.05rem', fontWeight:'900' }}>{activePage.replace('_', ' ')}</h1>
+                                    <p style={{ color: 'var(--text-gray)', fontSize:'0.75rem', opacity:0.7 }}>{activePage === 'my_applications' ? 'Your personal roadmap for academic success.' : 'Explore world-class academic and funding opportunities.'}</p>
+                                </div>
+                                {activePage !== 'keys' && activePage !== 'my_applications' && <SortControl type={activePage} value={sortBy} onChange={setSortBy} />}
+                            </div>
+                        </section>
+
+                        {isAdmin && activePage === 'keys' && (
+                            <KeyManagerPanel
+                                keys={keysData}
+                                onAdd={k => setKeysData([...keysData, { ...k, id: Date.now(), paused: false, isVIP: false }])}
+                                onDelete={id => setKeysData(keysData.filter(k => k.id !== id))}
+                                onTogglePause={id => setKeysData(keysData.map(k => k.id === id ? { ...k, paused: !k.paused } : k))}
+                                onToggleVIP={id => setKeysData(keysData.map(k => k.id === id ? { ...k, isVIP: !k.isVIP } : k))}
+                                currentUser={currentUser}
+                                adminCreds={adminUserCreds}
+                                setAdminCreds={setAdminUserCreds}
+                                downloadData={downloadData}
+                                onReset={resetFromServer}
+                            />
+                        )}
+
+
+
+                        {(isAdmin || (isVIP && vipEditMode)) && activePage !== 'keys' && activePage !== 'my_applications' && activePage !== 'search' && (
+                            <AdminEntryPanel
+                                type={activePage}
+                                editingItem={editingItem}
+                                onCancel={() => setEditingItem(null)}
+                                onAdd={handleAddOrEdit}
+                                isAdmin={isAdmin}
+                                downloadData={downloadData}
+                                onReset={resetFromServer}
+                            />
+                        )}
+
+                        {activePage === 'search' && (
+                            <AdvancedSearch 
+                                centralData={centralData}
+                                uniData={uniData}
+                                uniScholData={uniScholData}
+                                isAdmin={isAdmin || (isVIP && vipEditMode)}
+                                isMaster={isMaster}
+                                appliedKeys={appliedKeys}
+                                toggleApplied={toggleApplied}
+                                onEdit={(item) => { setEditingItem(item); setActivePage(item.type || 'central'); window.scrollTo({top:0, behavior:'smooth'}); }}
+                                onDelete={(id, type) => {
+                                    if(confirm('Delete this entry?')) {
+                                        if (type === 'central') setCentralData(centralData.filter(i => i.id !== id));
+                                        else if (type === 'university') setUniData(uniData.filter(i => i.id !== id));
+                                        else setUniScholData(uniScholData.filter(i => i.id !== id));
+                                    }
+                                }}
+                                filters={searchFilters}
+                                setFilters={setSearchFilters}
+                            />
+                        )}
+
+                        {activePage !== 'keys' && activePage !== 'search' && (
+                            <div className="card-grid">
+                                {displayData.length === 0 && (
+                                    <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '4rem', color: 'var(--text-gray)' }}>
+                                        <h3>No entries found.</h3>
+                                        {activePage === 'my_applications' && <p>Go to scholarship pages and click "Yet to apply" to start tracking.</p>}
+                                    </div>
+                                )}
+                                {activePage === 'my_applications' ? (
+                                    <>
+                                        {['central', 'university', 'uni_schol'].map(cat => {
+                                            const items = displayData.filter(i => i.type === cat);
+                                            if (items.length === 0) return null;
+                                            return (
+                                                <div key={cat} style={{gridColumn:'1/-1', marginTop:'1rem'}}>
+                                                    <h4 style={{
+                                                        color:'var(--primary)', 
+                                                        fontSize:'1.1rem', 
+                                                        fontWeight:'800', 
+                                                        marginBottom:'1.5rem', 
+                                                        display:'flex', 
+                                                        alignItems:'center', 
+                                                        gap:'0.8rem',
+                                                        paddingLeft:'0.5rem',
+                                                        borderLeft:'4px solid var(--primary)'
+                                                    }}>
+                                                        {cat === 'central' ? 'Central Scholarships' : cat === 'university' ? 'University Admissions' : 'University Scholarships'}
+                                                        <span style={{fontSize:'0.75rem', fontWeight:'400', color:'var(--text-gray)', opacity:0.6}}>({items.length})</span>
+                                                    </h4>
+                                                    <div className="card-grid" style={{marginTop:0}}>
+                                                        {items.map(item => (
+                                                            <ScholarshipCard
+                                                                key={item.id}
+                                                                type={item.type}
+                                                                data={item}
+                                                                isAdmin={isAdmin || (isVIP && vipEditMode)}
+                                                                isApplied={true}
+                                                                canToggle={false}
+                                                                onToggle={toggleApplied}
+                                                                onEdit={() => { setEditingItem(item); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                                                                onDelete={id => {
+                                                                    if (confirm('Are you sure you want to delete this entry?')) {
+                                                                        if (item.type === 'central') setCentralData(centralData.filter(i => i.id !== id));
+                                                                        else if (item.type === 'university') setUniData(uniData.filter(i => i.id !== id));
+                                                                        else setUniScholData(uniScholData.filter(i => i.id !== id));
+                                                                    }
+                                                                }}
+                                                            />
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </>
+                                ) : (
+                                    displayData.map(item => (
+                                        <ScholarshipCard
+                                            key={item.id}
+                                            type={activePage === 'my_applications' ? (item.type) : activePage}
+                                            data={item}
+                                            isAdmin={isAdmin || (isVIP && vipEditMode)}
+                                            isApplied={appliedKeys.includes(`${activePage === 'my_applications' ? item.type : activePage}-${item.id}`)}
+                                            canToggle={activePage !== 'my_applications'}
+                                            onToggle={toggleApplied}
+                                            onEdit={() => { setEditingItem(item); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                                            onDelete={id => {
+                                                if (confirm('Are you sure you want to delete this entry?')) {
+                                                    if (activePage === 'central') setCentralData(centralData.filter(i => i.id !== id));
+                                                    else if (activePage === 'university') setUniData(uniData.filter(i => i.id !== id));
+                                                    else setUniScholData(uniScholData.filter(i => i.id !== id));
+                                                }
+                                            }}
+                                        />
+                                    ))
+                                )}
+                            </div>
+                        )}
+                    </main>
+                    <Footer />
+                    
+                    {/* Premium Mobile Bottom Navigation */}
+                    <div className="bottom-nav">
+                        <div className={`bottom-nav-item ${activePage === 'central' ? 'active' : ''}`} onClick={() => setActivePage('central')}>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                            <span>Central</span>
+                        </div>
+                        <div className={`bottom-nav-item ${activePage === 'uni_schol' || activePage === 'university' ? 'active' : ''}`} onClick={() => setActivePage('uni_schol')}>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"></path><path d="M6 12v5c3 3 9 3 12 0v-5"></path></svg>
+                            <span>Univ.</span>
+                        </div>
+                        <div className={`bottom-nav-item ${activePage === 'search' ? 'active' : ''}`} onClick={() => setActivePage('search')}>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                            <span>Search</span>
+                        </div>
+                        <div className={`bottom-nav-item ${activePage === 'my_applications' ? 'active' : ''}`} onClick={() => setActivePage('my_applications')}>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+                            <span>My Apps</span>
+                        </div>
+                        {isAdmin && (
+                            <div className={`bottom-nav-item ${activePage === 'keys' ? 'active' : ''}`} onClick={() => setActivePage('keys')}>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                                <span>Admins</span>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            );
+        }
+
+        const Footer = () => (
+            <footer className="footer">
+                <div className="container">
+                    <p>© {new Date().getFullYear()} <b>Ahsan Gilman</b>. All Rights Reserved.</p>
+                </div>
+            </footer>
+        );
+
+        const Landing = ({ onStart }) => (
+            <div className="landing-page">
+                <div className="hero-box fade-in">
+                    <h2>Empowering Academic Dreams Worldwide</h2>
+                    <p>Discover fully-funded scholarships and research positions at the world's most prestigious institutions.</p>
+                    <button className="btn btn-primary" onClick={onStart}>Do you want to explore scholarship? Log in</button>
+                </div>
+            </div>
+        );
+
+        const AuthScreen = ({ onAuth }) => {
+            const [email, setEmail] = useState('');
+            const [key, setKey] = useState('');
+            return (
+                <div className="auth-layout fade-in">
+                    <div className="auth-box">
+                        <h3>Secure Portal Access</h3>
+                        <p>Authorized access only. Please enter your credentials.</p>
+                        <div className="input-field" style={{ marginBottom: '1rem' }}>
+                            <label>Email Address</label>
+                            <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="Email" />
+                        </div>
+                        <div className="input-field" style={{ marginBottom: '2rem' }}>
+                            <label>Security Key</label>
+                            <input type="password" value={key} onChange={e => setKey(e.target.value)} placeholder="Key" />
+                        </div>
+                        <button className="btn btn-primary" style={{ width: '100%', height: '54px' }} onClick={() => onAuth(email, key)}>Verify & Enter</button>
+                    </div>
+                </div>
+            );
+        };
+
+        const AdvancedSearch = ({ centralData, uniData, uniScholData, isAdmin, isMaster, appliedKeys, toggleApplied, onEdit, onDelete, filters, setFilters }) => {
+            const allItems = useMemo(() => [
+                ...centralData.map(d => ({ ...d, type: 'central' })),
+                ...uniData.map(d => ({ ...d, type: 'university' })),
+                ...uniScholData.map(d => ({ ...d, type: 'uni_schol' }))
+            ], [centralData, uniData, uniScholData]);
+
+            const countries = useMemo(() => [...new Set(allItems.map(i => i.country).filter(Boolean))].sort(), [allItems]);
+            
+            const universities = useMemo(() => {
+                const list = filters.country ? allItems.filter(i => i.country === filters.country) : allItems;
+                return [...new Set(list.map(i => i.university).filter(Boolean))].sort();
+            }, [filters.country, allItems]);
+
+
+
+            const searchResults = useMemo(() => {
+                return allItems.filter(item => {
+                    const matchCountry = !filters.country || item.country === filters.country;
+                    const matchUni = !filters.university || item.university === filters.university;
+                    const matchDegree = !filters.degree || (item.degree || item.subject) === filters.degree;
+                    return matchCountry && matchUni && matchDegree;
+                });
+            }, [filters, allItems]);
+
+            return (
+                <div className="search-page fade-in">
+                    <div className="search-filter-card">
+                        <div className="form-grid" style={{marginBottom:0}}>
+                            <div className="input-field">
+                                <label>SELECT COUNTRY</label>
+                                <select value={filters.country} onChange={e => setFilters({...filters, country: e.target.value, university: '', degree: ''})}>
+                                    <option value="">All Countries</option>
+                                    {countries.map(c => <option key={c} value={c}>{c}</option>)}
+                                </select>
+                            </div>
+                            <div className="input-field">
+                                <label>SELECT UNIVERSITY</label>
+                                <select value={filters.university} onChange={e => setFilters({...filters, university: e.target.value, degree: ''})}>
+                                    <option value="">All Universities</option>
+                                    {universities.map(u => <option key={u} value={u}>{u}</option>)}
+                                </select>
+                            </div>
+                            <div className="input-field">
+                                <label>SELECT DEGREE / SUBJECT</label>
+                                <select value={filters.degree} onChange={e => setFilters({...filters, degree: e.target.value})}>
+                                    <option value="">All</option>
+                                    <option value="MS">MS</option>
+                                    <option value="PhD">PhD</option>
+                                    <option value="Both">Both</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="search-results-header">
+                        <h4>Results Found: {searchResults.length}</h4>
+                        <button className="btn btn-ghost" style={{fontSize:'0.7rem'}} onClick={() => setFilters({country:'', university:'', degree:''})}>Clear All</button>
+                    </div>
+
+                    <div className="card-grid">
+                        {searchResults.map(item => (
+                            <ScholarshipCard 
+                                key={`${item.type}-${item.id}`}
+                                data={item}
+                                type={item.type}
+                                isAdmin={isAdmin}
+                                isApplied={appliedKeys.includes(`${item.type}-${item.id}`)}
+                                canToggle={true}
+                                onToggle={toggleApplied}
+                                onEdit={() => onEdit(item)}
+                                onDelete={id => onDelete(id, item.type)}
+                            />
+                        ))}
+                        {searchResults.length === 0 && (
+                            <div style={{gridColumn:'1/-1', textAlign:'center', padding:'4rem', color:'var(--text-gray)'}}>
+                                <h3>No matching results found.</h3>
+                                <p>Try adjusting your filters for a broader search.</p>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            );
+        };
+
+        const SortControl = ({ type, value, onChange }) => {
+            const fullOptions = ['All', 'Country', 'University', 'Degree', 'OL Required', 'OL Not Required', 'Fee have', 'No fee', 'Application End'];
+            const options = fullOptions.filter(opt => type !== 'central' || opt !== 'University');
+
+            return (
+                <div style={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: '0.6rem', 
+                    background: '#fff', 
+                    padding: '0.5rem 1rem', 
+                    borderRadius: '10px', 
+                    border: '1px solid var(--border-light)',
+                    boxShadow: 'var(--shadow-sm)'
+                }}>
+                    <span style={{ fontSize: '0.6rem', fontWeight: '800', color: 'var(--text-gray)', whiteSpace: 'nowrap' }}>Filter by :</span>
+                    <select 
+                        value={value} 
+                        onChange={e => onChange(e.target.value)}
+                        style={{ 
+                            padding: '0.2rem 1.5rem 0.2rem 0.4rem', 
+                            fontSize: '0.75rem', 
+                            border: 'none', 
+                            background: '#f8fafc',
+                            borderRadius: '6px',
+                            cursor: 'pointer',
+                            color: 'var(--primary)',
+                            fontWeight: '700'
+                        }}
+                    >
+                        {options.map(o => <option key={o} value={o}>{o}</option>)}
+                    </select>
+                </div>
+            );
+        };
+
+        const ScholarshipCard = ({ type, data, isAdmin, onDelete, onEdit, isApplied, onToggle, canToggle }) => (
+            <div className={`scholarship-card fade-in ${ (type === 'university' || type === 'uni_schol') ? 'uni-card' : ''}`}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem' }}>
+                    <h3>{data.name || data.university}</h3>
+                    <button
+                        className={`btn ${isApplied ? 'btn-primary' : 'btn-outline'}`}
+                        style={{ fontSize: '0.65rem', height: '32px', padding: '0 1rem', flexShrink: 0, borderColor: isApplied ? 'var(--primary)' : '#e2e8f0' }}
+                        disabled={!canToggle}
+                        onClick={() => onToggle(type || data.type, data.id)}
+                    >
+                        {isApplied ? '✓ Applied' : 'Yet to apply'}
+                    </button>
+                </div>
+                <ul className="card-info">
+                    {data.university && data.name && type !== 'central' && <li><span className="lbl-uni">University</span> <b>{data.university}</b></li>}
+                    {data.country && <li><span className="lbl-country">Country</span> <b>{data.country}</b></li>}
+                    {data.degree && <li><span className="lbl-degree">Degree</span> <b>{data.degree}</b></li>}
+                    {data.subject && <li><span className="lbl-subject">Subject</span> <b>{data.subject}</b></li>}
+                    {data.facilities && <li><span className="lbl-benefits">Benefits</span> <b>{data.facilities}</b></li>}
+                    {data.ol_needed && <li><span className="lbl-ol">Offer Letter Needed?</span> <b>{data.ol_needed}</b></li>}
+                    {data.special_req && <li><span className="lbl- benefits">Special Requirement</span> <b>{data.special_req}</b></li>}
+
+                    {(type === 'central' || type === 'university' || data.type === 'central' || data.type === 'university') && (
+                        <li>
+                            <span className="lbl-fee">Application fee</span>
+                            <b>{data.ol_required === 'Yes' ? (data.fee || 'Yes') : 'No'}</b>
+                        </li>
+                    )}
+
+                    {data.start && <li><span className="lbl-deadline">Application Start</span> <b>{data.start}</b></li>}
+                    {data.end && <li><span className="lbl-deadline">Application End</span> <b>{data.end}</b></li>}
+                    {data.email && (
+                        <li>
+                            <span className="lbl-uni">Email</span>
+                            <b style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                                {data.email}
+                                <span
+                                    className="copy-icon"
+                                    title="Copy Email"
+                                    onClick={(e) => {
+                                        navigator.clipboard.writeText(data.email);
+                                        const original = e.currentTarget.innerHTML;
+                                        e.currentTarget.innerHTML = '<span style="color:var(--success); font-size:0.6rem">✓</span>';
+                                        setTimeout(() => e.currentTarget.innerHTML = original, 2000);
+                                    }}
+                                    style={{ cursor: 'pointer', opacity: 0.6, display: 'inline-flex' }}
+                                >
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                                </span>
+                            </b>
+                        </li>
+                    )}
+                    {data.link && (
+                        <li>
+                            <span className="lbl-link">Official Link</span>
+                            <a href={data.link} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--success)', fontWeight: '700', textDecoration: 'underline' }}>Visit Website</a>
+                        </li>
+                    )}
+                </ul>
+                {isAdmin && (
+                    <div style={{ display: 'flex', gap: '0.8rem', marginTop: '1.5rem', justifyContent: 'flex-end' }}>
+                        <button className="btn btn-outline" style={{ fontSize: '0.65rem', height: '32px', padding: '0 1rem', borderColor: 'var(--primary-light)', color: 'var(--primary)' }} onClick={onEdit}>EDIT</button>
+                        <button className="btn btn-outline" style={{ fontSize: '0.65rem', height: '32px', padding: '0 1rem', borderColor: '#fecaca', color: 'var(--danger)' }} onClick={() => onDelete(data.id)}>DELETE</button>
+                    </div>
+                )}
+            </div>
+        );
+
+        const AdminEntryPanel = ({ type, onAdd, editingItem, onCancel, isAdmin, downloadData, onReset }) => {
+            const [form, setForm] = useState({ ol_required: 'No', degree: 'MS' });
+
+            useEffect(() => {
+                if (editingItem) setForm(editingItem);
+                else setForm({ ol_required: 'No', degree: 'MS' });
+            }, [editingItem, type]);
+
+            const fields = useMemo(() => {
+                if (type === 'central') return ['name', 'country', 'university', 'degree', 'special_req', 'ol_needed', 'ol_required', 'fee', 'facilities', 'start', 'end', 'link'];
+                if (type === 'university') return ['university', 'country', 'subject', 'degree', 'special_req', 'ol_required', 'fee', 'start', 'end', 'link'];
+                return ['university', 'country', 'name', 'degree', 'facilities', 'special_req', 'ol_required', 'fee', 'start', 'end', 'link'];
+            }, [type]);
+
+            return (
+                <section className="admin-section fade-in" id="admin-form">
+                    <h3 style={{ color: editingItem ? 'var(--primary)' : 'var(--success)', fontWeight: '800' }}>
+                        {editingItem ? `Edit ${type.toUpperCase()} Entry` : `Admin: New ${type.toUpperCase()} Entry`}
+                    </h3>
+                    <div className="form-grid">
+                        {fields.map(f => {
+                            if (f === 'fee' && form.ol_required !== 'Yes') return null;
+
+                            return (
+                                <div key={f} className="input-field">
+                                    <label>
+                                        {f === 'ol_required' ? 'Application Fee' :
+                                            f === 'ol_needed' ? 'Offer Letter Needed?' :
+                                                f.charAt(0).toUpperCase() + f.slice(1).replace(/_/g, ' ')}
+                                    </label>
+                                    {f === 'ol_required' || f === 'ol_needed' ? (
+                                        <select value={form[f] || 'No'} onChange={e => setForm({ ...form, [f]: e.target.value })}><option value="No">No</option><option value="Yes">Yes</option></select>
+                                    ) : f === 'degree' ? (
+                                        <select value={form[f] || 'MS'} onChange={e => setForm({ ...form, [f]: e.target.value })}>
+                                            <option value="MS">MS</option>
+                                            <option value="PhD">PhD</option>
+                                            <option value="Both">Both</option>
+                                        </select>
+                                    ) : f.includes('start') || f.includes('end') ? (
+                                        <input type="date" value={form[f] || ''} onChange={e => setForm({ ...form, [f]: e.target.value })} />
+                                    ) : (
+                                        <input placeholder="..." value={form[f] || ''} onChange={e => setForm({ ...form, [f]: e.target.value })} />
+                                    )}
+                                </div>
+                            );
+                        })}
+                    </div>
+                    <div style={{ display: 'flex', gap: '1rem', marginTop: '2rem', justifyContent: 'flex-end' }}>
+                        <button className="btn btn-primary" style={{ padding: '0 2rem', height: '48px', background: editingItem ? 'var(--primary)' : 'var(--success)' }} onClick={() => { onAdd(form); }}>
+                            {editingItem ? 'Update Item' : 'Save Entry'}
+                        </button>
+                        {isAdmin && (
+                            <>
+                                <button className="btn btn-outline" style={{ padding: '0 1.5rem', height: '48px', borderColor: 'var(--success)', color: 'var(--success)' }} onClick={downloadData}>
+                                    Download data.json
+                                </button>
+                                <button className="btn btn-ghost" style={{ padding: '0 1rem', height: '48px', color: 'var(--danger)', fontSize: '0.7rem' }} onClick={onReset}>
+                                    Discard Edits & Reset
+                                </button>
+                            </>
+                        )}
+                        {editingItem && (
+                            <button className="btn btn-outline" style={{ padding: '0 1.5rem', height: '48px' }} onClick={onCancel}>Cancel</button>
+                        )}
+                    </div>
+                </section>
+            );
+        };
+        const KeyManagerPanel = ({ keys, onAdd, onDelete, onTogglePause, onToggleVIP, currentUser, adminCreds, setAdminCreds, downloadData, onReset }) => {
+            const [form, setForm] = useState({ email: '', key: '', start: '', end: '' });
+            const isMasterEditor = currentUser === 'ahsan.gilman@gmail.com';
+
+            return (
+                <div className="admin-section fade-in" style={{ borderStyle: 'solid', borderColor: 'var(--primary)', padding: '2.5rem' }}>
+                    <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', marginBottom: '1.5rem' }}>
+                        <h3 style={{ color: 'var(--primary)', fontWeight: '800', margin: 0 }}>Key Manager: Private Access Control</h3>
+                        <button className="btn btn-outline" style={{ fontSize: '0.7rem', height: '32px', borderColor: 'var(--success)', color: 'var(--success)' }} onClick={downloadData}>
+                            Download data.json (Current Database)
+                        </button>
+                        <button className="btn btn-ghost" style={{ fontSize: '0.6rem', height: '32px', color: 'var(--danger)' }} onClick={onReset}>
+                            Discard & Reset
+                        </button>
+                    </div>
+                    
+
+                    <div className="form-grid" style={{ marginBottom: '2rem' }}>
+                        <div className="input-field">
+                            <label>USER EMAIL</label>
+                            <input value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} placeholder="user@example.com" />
+                        </div>
+                        <div className="input-field">
+                            <label>SECURITY KEY (PASSWORD)</label>
+                            <input value={form.key} onChange={e => setForm({ ...form, key: e.target.value })} placeholder="e.g. SCL2026" />
+                        </div>
+                        <div className="input-field">
+                            <label>START DATE (OPTIONAL)</label>
+                            <input type="date" value={form.start} onChange={e => setForm({ ...form, start: e.target.value })} />
+                        </div>
+                        <div className="input-field">
+                            <label>END DATE (OPTIONAL)</label>
+                            <input type="date" value={form.end} onChange={e => setForm({ ...form, end: e.target.value })} />
+                        </div>
+                    </div>
+                    <button className="btn btn-primary" style={{ padding: '0.8rem 3rem', marginBottom: '3rem' }} onClick={() => {
+                        if (!form.email || !form.key) { alert('Email and Key are required.'); return; }
+                        onAdd(form);
+                        setForm({ email: '', key: '', start: '', end: '' });
+                    }}>Authorize New Key</button>
+
+                    <div className="keys-list">
+                        <h4 style={{ marginBottom: '1rem', fontSize: '0.9rem', color: 'var(--text-gray)' }}>AUTHORIZED CREDENTIALS ({keys.length})</h4>
+                        <div style={{ overflowX: 'auto', background: '#fff', borderRadius: '12px', border: '1px solid var(--border-light)' }}>
+                            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
+                                <thead style={{ textAlign: 'left', background: '#f8fafc', borderBottom: '1px solid var(--border-light)' }}>
+                                    <tr>
+                                        <th style={{ padding: '1rem' }}>User Email</th>
+                                        <th style={{ padding: '1rem' }}>Key</th>
+                                        <th style={{ padding: '1rem' }}>Start</th>
+                                        <th style={{ padding: '1rem' }}>End</th>
+                                        <th style={{ padding: '1rem' }}>Last Active</th>
+                                        <th style={{ padding: '1rem' }}>Editor</th>
+                                        <th style={{ padding: '1rem' }}>Status</th>
+                                        <th style={{ padding: '1rem' }}>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {keys.map(k => (
+                                        <tr key={k.id} style={{ borderBottom: '1px solid #f8fafc', opacity: k.paused ? 0.5 : 1 }}>
+                                            <td style={{ padding: '1rem' }}><b>{k.email}</b></td>
+                                            <td style={{ padding: '1rem' }}><code>{k.key}</code></td>
+                                            <td style={{ padding: '1rem' }}>{k.start || '---'}</td>
+                                            <td style={{ padding: '1rem' }}>{k.end || '---'}</td>
+                                            <td style={{ padding: '1rem' }}>{formatTimeAgo(k.last_active)}</td>
+                                            <td style={{ padding: '1rem' }}>
+                                                <button 
+                                                    className={`btn ${k.isVIP ? 'btn-primary' : 'btn-outline'}`}
+                                                    style={{fontSize:'0.6rem', height:'24px', padding:'0 0.5rem'}}
+                                                    onClick={() => onToggleVIP(k.id)}
+                                                >
+                                                    {k.isVIP ? 'EDITOR' : 'GRANT'}
+                                                </button>
+                                            </td>
+                                            <td style={{ padding: '1rem' }}>
+                                                <span style={{ padding: '0.2rem 0.5rem', borderRadius: '4px', fontSize: '0.65rem', fontWeight: '800', background: k.paused ? '#fee2e2' : '#d1fae5', color: k.paused ? 'var(--danger)' : 'var(--success)' }}>
+                                                    {k.paused ? 'PAUSED' : 'ACTIVE'}
+                                                </span>
+                                            </td>
+                                            <td style={{ padding: '1rem' }}>
+                                                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                                    <button
+                                                        className="btn btn-ghost"
+                                                        style={{ color: k.paused ? 'var(--success)' : 'var(--secondary)', fontSize: '0.7rem', height: '32px', fontWeight: '800' }}
+                                                        onClick={() => onTogglePause(k.id)}
+                                                    >
+                                                        {k.paused ? 'RESUME' : 'PAUSE'}
+                                                    </button>
+                                                    <button className="btn btn-ghost" style={{ color: 'var(--danger)', fontSize: '0.7rem', height: '32px' }} onClick={() => onDelete(k.id)}>REVOKE</button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                    {keys.length === 0 && <tr><td colSpan="6" style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-gray)' }}>No custom authorized keys found.</td></tr>}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+
+</html>
+
