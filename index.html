@@ -587,7 +587,7 @@ input, select { padding: 0.8rem 1rem; border-radius: 10px; border: 1px solid var
                         if (data.keys) setKeysData(prev => mergeData(prev, data.keys));
                         if (data.admin_creds) setAdminUserCreds(data.admin_creds);
                         if (data.user_prefs) {
-                            setUserPrefs(data.user_prefs);
+                            setUserPrefs(prev => ({ ...data.user_prefs, ...prev })); // Server prefs merged with local for active session
                             if (currentUser && data.user_prefs[currentUser]) {
                                 setAppliedKeys(data.user_prefs[currentUser].applied_keys || []);
                             }
@@ -706,7 +706,7 @@ input, select { padding: 0.8rem 1rem; border-radius: 10px; border: 1px solid var
                 localStorage.setItem('user_prefs_v1', JSON.stringify(userPrefs));
 
                 // Auto-Sync Trigger
-                if (isLoggedIn && (isAdmin || isVIP)) {
+                if (isLoggedIn) {
                     const fullData = {
                         central: centralData,
                         university: uniData,
