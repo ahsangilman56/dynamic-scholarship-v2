@@ -547,6 +547,7 @@ input, select { padding: 0.8rem 1rem; border-radius: 10px; border: 1px solid var
             const [showKeySearch, setShowKeySearch] = useState(false);
             const [keywordQuery, setKeywordQuery] = useState('');
             const [isLoading, setIsLoading] = useState(false);
+            const [syncStatus, setSyncStatus] = useState('Online');
 
             // Persistence
             const [centralData, setCentralData] = useState(() => JSON.parse(localStorage.getItem('cs_data_v2')) || []);
@@ -568,8 +569,13 @@ input, select { padding: 0.8rem 1rem; border-radius: 10px; border: 1px solid var
             const fetchData = async (force = false) => {
                 setIsLoading(true);
                 try {
-                    // Always try to fetch from GitHub raw content first for global consistency
-                    const res = await fetch(`https://raw.githubusercontent.com/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/${GITHUB_CONFIG.branch}/${GITHUB_CONFIG.path}?t=${Date.now()}`);
+                    // Use the GitHub API directly to bypass the 5-minute CDN cache, ensuring we always get the absolute latest changes immediately
+                    const res = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.path}?t=${Date.now()}`, {
+                        headers: {
+                            Authorization: `token ${GITHUB_CONFIG.token}`,
+                            Accept: 'application/vnd.github.v3.raw'
+                        }
+                    });
                     if (!res.ok) throw new Error('GitHub Data not found');
                     const data = await res.json();
                     
@@ -587,10 +593,13 @@ input, select { padding: 0.8rem 1rem; border-radius: 10px; border: 1px solid var
                         if (data.keys) setKeysData(prev => mergeData(prev, data.keys));
                         if (data.admin_creds) setAdminUserCreds(data.admin_creds);
                         if (data.user_prefs) {
-                            setUserPrefs(prev => ({ ...data.user_prefs, ...prev })); // Server prefs merged with local for active session
-                            if (currentUser && data.user_prefs[currentUser]) {
-                                setAppliedKeys(data.user_prefs[currentUser].applied_keys || []);
-                            }
+                            setUserPrefs(prev => {
+                                const mergedUserPrefs = { ...data.user_prefs, ...prev }; // Local session takes precedence over any potentially stale server data
+                                if (currentUser && mergedUserPrefs[currentUser]) {
+                                    setAppliedKeys(mergedUserPrefs[currentUser].applied_keys || []);
+                                }
+                                return mergedUserPrefs;
+                            });
                         }
                     }
                     
@@ -613,6 +622,7 @@ input, select { padding: 0.8rem 1rem; border-radius: 10px; border: 1px solid var
             };
 
             const syncToGitHub = async (fullData) => {
+                setSyncStatus('Syncing...');
                 try {
                     // 1. Get current SHA
                     const res = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.path}`, {
@@ -636,10 +646,15 @@ input, select { padding: 0.8rem 1rem; border-radius: 10px; border: 1px solid var
                         })
                     });
                     
-                    if (putRes.ok) console.log("Successfully synced to GitHub.");
+                    if (putRes.ok) {
+                        console.log("Successfully synced to GitHub.");
+                        setSyncStatus('Updated ✓');
+                        setTimeout(() => setSyncStatus('Online'), 3000);
+                    }
                     else throw new Error("Sync failed with status " + putRes.status);
                 } catch (err) {
                     console.error("Auto-sync failed:", err);
+                    setSyncStatus('Offline / Error');
                 }
             };
 
@@ -704,6 +719,7 @@ input, select { padding: 0.8rem 1rem; border-radius: 10px; border: 1px solid var
                 localStorage.setItem('auth_keys_v2', JSON.stringify(keysData));
                 localStorage.setItem('auth_admin_user_v1', JSON.stringify(adminUserCreds));
                 localStorage.setItem('user_prefs_v1', JSON.stringify(userPrefs));
+                localStorage.setItem('user_apps_v1', JSON.stringify(appliedKeys)); // Immediate local backup to prevent refresh wipes
 
                 // Auto-Sync Trigger
                 if (isLoggedIn) {
@@ -718,7 +734,7 @@ input, select { padding: 0.8rem 1rem; border-radius: 10px; border: 1px solid var
                     const timeoutId = setTimeout(() => syncToGitHub(fullData), 2000); // 2s debounce
                     return () => clearTimeout(timeoutId);
                 }
-            }, [centralData, uniData, uniScholData, keysData, adminUserCreds, userPrefs]);
+            }, [centralData, uniData, uniScholData, keysData, adminUserCreds, userPrefs, appliedKeys]);
 
             const displayData = useMemo(() => {
                 if (activePage === 'my_applications') {
@@ -913,6 +929,29 @@ input, select { padding: 0.8rem 1rem; border-radius: 10px; border: 1px solid var
                                 </li>
                             </ul>
                             <div className="nav-actions">
+                                {isLoggedIn && (
+                                    <div style={{
+                                        fontSize: '0.65rem',
+                                        fontWeight: '800',
+                                        color: syncStatus === 'Online' ? 'var(--text-gray)' : syncStatus === 'Syncing...' ? 'var(--primary)' : syncStatus === 'Updated ✓' ? 'var(--success)' : 'var(--danger)',
+                                        background: syncStatus === 'Online' ? '#f1f5f9' : syncStatus === 'Syncing...' ? '#e0e7ff' : syncStatus === 'Updated ✓' ? '#dcfce7' : '#fee2e2',
+                                        padding: '0.4rem 0.8rem',
+                                        borderRadius: '12px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '0.4rem',
+                                        marginRight: '0.5rem',
+                                        transition: 'all 0.3s ease',
+                                        boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.02)'
+                                    }}>
+                                        <span style={{
+                                            width: '6px', height: '6px', borderRadius: '50%',
+                                            background: syncStatus === 'Online' ? '#94a3b8' : syncStatus === 'Syncing...' ? 'var(--primary)' : syncStatus === 'Updated ✓' ? 'var(--success)' : 'var(--danger)',
+                                            animation: syncStatus === 'Syncing...' ? 'pulse 1s infinite' : 'none'
+                                        }}></span>
+                                        {syncStatus}
+                                    </div>
+                                )}
                                 {isVIP && !isAdmin && (
                                     <button 
                                         className={`btn ${vipEditMode ? 'btn-primary' : 'btn-outline'}`} 
