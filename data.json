@@ -1,58 +1,4 @@
 {
-  "central": [
-    {
-      "ol_required": "No",
-      "degree": "MS",
-      "name": "Chevening Scholarship",
-      "country": "UK",
-      "university": "",
-      "ol_needed": "Yes",
-      "facilities": "Fully Funded",
-      "start": "5 August",
-      "end": "7 October",
-      "link": "https://www.chevening.org/apply/",
-      "id": 1775831627601
-    },
-    {
-      "ol_required": "No",
-      "degree": "Both",
-      "name": "Commonwealth Scholarships",
-      "country": "UK",
-      "university": "",
-      "ol_needed": "Yes",
-      "facilities": "Fully Funded",
-      "start": "1 August",
-      "end": "7 October",
-      "link": "https://cscuk.fcdo.gov.uk/apply/",
-      "special_req": "Varsity of Country Nomination",
-      "id": 1775831813046
-    },
-    {
-      "ol_required": "No",
-      "degree": "Both",
-      "name": " Italian Government Scholarship (MAECI)",
-      "country": "Italy",
-      "ol_needed": "Yes",
-      "start": "1 March",
-      "end": "26 March",
-      "link": "https://studyinitaly.esteri.it/",
-      "id": 1775895394493,
-      "facilities": "Full Fund"
-    },
-    {
-      "ol_required": "No",
-      "degree": "Both",
-      "name": "Regional Scholarship (DSU)",
-      "country": "Italy",
-      "special_req": "Need based (Income document must be showed)",
-      "start": "1 July",
-      "end": "31 July",
-      "id": 1775900488083,
-      "ol_needed": "Yes"
-    }
-  ],
-  "university": [],
-  "uni_schol": [],
   "keys": [
     {
       "email": "user@gmail.com",
@@ -62,25 +8,8 @@
       "id": 1775821215496,
       "paused": false,
       "isVIP": true,
-      "last_active": "2026-04-12T06:38:35.143Z",
-      "login_count": 7
+      "last_active": "2026-04-12T06:46:53.388Z",
+      "login_count": 8
     }
-  ],
-  "admin_creds": {
-    "email": "ahsan.gilman@gmail.com",
-    "key": "Abu56",
-    "isVIP": true,
-    "gh_token": ""
-  },
-  "user_prefs": {
-    "ahsan": {
-      "applied_keys": []
-    },
-    "ahsan.gilman@gmail.com": {
-      "applied_keys": []
-    },
-    "user@gmail.com": {
-      "applied_keys": []
-    }
-  }
+  ]
 }
