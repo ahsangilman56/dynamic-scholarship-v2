@@ -8,8 +8,8 @@
       "university": "",
       "ol_needed": "Yes",
       "facilities": "Fully Funded",
-      "start": "5 August",
-      "end": "7 October",
+      "start": "2027-08-05",
+      "end": "2027-10-07",
       "link": "https://www.chevening.org/apply/",
       "id": 1775831627601
     },
@@ -21,8 +21,8 @@
       "university": "",
       "ol_needed": "Yes",
       "facilities": "Fully Funded",
-      "start": "1 August",
-      "end": "7 October",
+      "start": "2027-08-01",
+      "end": "2027-10-07",
       "link": "https://cscuk.fcdo.gov.uk/apply/",
       "special_req": "Varsity of Country Nomination",
       "id": 1775831813046
@@ -33,8 +33,8 @@
       "name": " Italian Government Scholarship (MAECI)",
       "country": "Italy",
       "ol_needed": "Yes",
-      "start": "1 March",
-      "end": "26 March",
+      "start": "2027-03-01",
+      "end": "2027-03-26",
       "link": "https://studyinitaly.esteri.it/",
       "id": 1775895394493,
       "facilities": "Full Fund"
@@ -45,8 +45,8 @@
       "name": "Regional Scholarship (DSU)",
       "country": "Italy",
       "special_req": "Need based (Income document must be showed)",
-      "start": "1 July",
-      "end": "31 July",
+      "start": "2027-07-01",
+      "end": "2027-07-31",
       "id": 1775900488083,
       "ol_needed": "Yes"
     }
@@ -62,7 +62,7 @@
       "id": 1775821215496,
       "paused": false,
       "isVIP": true,
-      "last_active": "2026-04-11T21:22:06.827Z"
+      "last_active": "2026-04-11T12:39:00.840Z"
     }
   ],
   "admin_creds": {
@@ -79,7 +79,9 @@
       "applied_keys": []
     },
     "user@gmail.com": {
-      "applied_keys": []
+      "applied_keys": [
+        "central-1775831627601"
+      ]
     }
   }
 }
