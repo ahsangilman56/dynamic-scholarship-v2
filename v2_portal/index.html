@@ -556,6 +556,7 @@ input, select { padding: 0.8rem 1rem; border-radius: 10px; border: 1px solid var
             const [isLoading, setIsLoading] = useState(false);
             const [syncStatus, setSyncStatus] = useState('Online');
             const [isDataLoaded, setIsDataLoaded] = useState(false);
+            const isLocalChange = useRef(false);
 
             // Persistence
             const [centralData, setCentralData] = useState(() => JSON.parse(localStorage.getItem('cs_data_v2')) || []);
@@ -596,30 +597,31 @@ input, select { padding: 0.8rem 1rem; border-radius: 10px; border: 1px solid var
                         const protectLocal = (local, server) => {
                             const serverIds = new Set(server.map(i => i.id));
                             const localNew = local.filter(i => !serverIds.has(i.id) && i.id > fiveMinsAgo);
-                            return [...localNew, ...server]; // New local items at top, then server items
+                            return [...localNew, ...server];
                         };
 
-                        if (data.central) setCentralData(prev => protectLocal(prev, data.central));
-                        if (data.university) setUniData(prev => protectLocal(prev, data.university));
-                        if (data.uni_schol) setUniScholData(prev => protectLocal(prev, data.uni_schol));
-                        if (data.keys) setKeysData(data.keys);
-                        if (data.admin_creds) setAdminUserCreds(data.admin_creds);
-                        if (data.user_prefs) setUserPrefs(data.user_prefs);
-                        setIsDataLoaded(true); // Signal that we have fresh server data
-                    } else {
-                        if (data.central) setCentralData(prev => mergeData(prev, data.central));
-                        if (data.university) setUniData(prev => mergeData(prev, data.university));
-                        if (data.uni_schol) setUniScholData(prev => mergeData(prev, data.uni_schol));
-                        if (data.keys) setKeysData(prev => mergeData(prev, data.keys));
-                        if (data.admin_creds) setAdminUserCreds(data.admin_creds);
+                        if (data.central) { isLocalChange.current = false; setCentralData(prev => protectLocal(prev, data.central)); }
+                        if (data.university) { isLocalChange.current = false; setUniData(prev => protectLocal(prev, data.university)); }
+                        if (data.uni_schol) { isLocalChange.current = false; setUniScholData(prev => protectLocal(prev, data.uni_schol)); }
+                        if (data.keys) { isLocalChange.current = false; setKeysData(data.keys); }
+                        if (data.admin_creds) { isLocalChange.current = false; setAdminUserCreds(data.admin_creds); }
                         if (data.user_prefs) {
+                            isLocalChange.current = false;
                             setUserPrefs(prev => {
-                                const mergedUserPrefs = { ...data.user_prefs, ...prev }; // Local session takes precedence over any potentially stale server data
-                                if (currentUser && mergedUserPrefs[currentUser]) {
-                                    setAppliedKeys(mergedUserPrefs[currentUser].applied_keys || []);
-                                }
+                                const mergedUserPrefs = { ...data.user_prefs, ...prev };
                                 return mergedUserPrefs;
                             });
+                        }
+                        setIsDataLoaded(true);
+                    } else {
+                        if (data.central) { isLocalChange.current = false; setCentralData(prev => mergeData(prev, data.central)); }
+                        if (data.university) { isLocalChange.current = false; setUniData(prev => mergeData(prev, data.university)); }
+                        if (data.uni_schol) { isLocalChange.current = false; setUniScholData(prev => mergeData(prev, data.uni_schol)); }
+                        if (data.keys) { isLocalChange.current = false; setKeysData(prev => mergeData(prev, data.keys)); }
+                        if (data.admin_creds) { isLocalChange.current = false; setAdminUserCreds(data.admin_creds); }
+                        if (data.user_prefs) {
+                            isLocalChange.current = false;
+                            setUserPrefs(prev => ({ ...data.user_prefs, ...prev }));
                         }
                     }
                     
@@ -728,7 +730,7 @@ input, select { padding: 0.8rem 1rem; border-radius: 10px; border: 1px solid var
                 } else if (!isLoggedIn) {
                     setAppliedKeys([]);
                 }
-            }, [isLoggedIn, currentUser]);
+            }, [isLoggedIn, currentUser, userPrefs]);
 
             useEffect(() => {
                 localStorage.setItem('cs_data_v2', JSON.stringify(centralData));
@@ -741,7 +743,7 @@ input, select { padding: 0.8rem 1rem; border-radius: 10px; border: 1px solid var
 
                 // Immediate background sync to GitHub
                 // ONLY push if we have successfully fetched the latest server data first
-                if (isLoggedIn && isDataLoaded) {
+                if (isLoggedIn && isDataLoaded && isLocalChange.current) {
                     const fullData = {
                         central: centralData,
                         university: uniData,
@@ -751,6 +753,7 @@ input, select { padding: 0.8rem 1rem; border-radius: 10px; border: 1px solid var
                         user_prefs: userPrefs
                     };
                     syncToGitHub(fullData);
+                    isLocalChange.current = false;
                 }
             }, [centralData, uniData, uniScholData, keysData, adminUserCreds, userPrefs, appliedKeys]);
 
@@ -825,7 +828,7 @@ input, select { padding: 0.8rem 1rem; border-radius: 10px; border: 1px solid var
                     setVipEditMode(false); // VIP users start in View Mode
                     setCurrentUser(email);
                     
-                    // Activity update - global sync effect will push this safely once isDataLoaded is true
+                    isLocalChange.current = true;
                     const loginTime = new Date().toISOString();
                     const updatedKeys = keysData.map(k => k.email === email ? { 
                         ...k, 
@@ -845,6 +848,7 @@ input, select { padding: 0.8rem 1rem; border-radius: 10px; border: 1px solid var
                 const canEdit = isAdmin || (isVIP && vipEditMode);
                 if (!canEdit) return;
                 
+                isLocalChange.current = true;
                 if (editingItem) {
                     const update = list => list.map(i => i.id === editingItem.id ? { ...data, id: i.id } : i);
                     if (activePage === 'central') setCentralData(update);
@@ -860,6 +864,7 @@ input, select { padding: 0.8rem 1rem; border-radius: 10px; border: 1px solid var
             };
 
             const toggleApplied = (category, id) => {
+                isLocalChange.current = true;
                 const itemKey = `${category}-${id}`;
                 const newApplied = appliedKeys.includes(itemKey)
                     ? appliedKeys.filter(k => k !== itemKey)
@@ -1069,6 +1074,7 @@ input, select { padding: 0.8rem 1rem; border-radius: 10px; border: 1px solid var
                                             onEdit={() => { setEditingItem(item); setActivePage(item.type || 'central'); setShowKeySearch(false); window.scrollTo({top:0, behavior:'smooth'}); }}
                                             onDelete={id => {
                                                 if (confirm('Delete this entry?')) {
+                                                    isLocalChange.current = true;
                                                     if (item.type === 'central') setCentralData(centralData.filter(i => i.id !== id));
                                                     else if (item.type === 'university') setUniData(uniData.filter(i => i.id !== id));
                                                     else setUniScholData(uniScholData.filter(i => i.id !== id));
@@ -1095,10 +1101,10 @@ input, select { padding: 0.8rem 1rem; border-radius: 10px; border: 1px solid var
                         {isAdmin && activePage === 'keys' && (
                             <KeyManagerPanel
                                 keys={keysData}
-                                onAdd={k => setKeysData([...keysData, { ...k, id: Date.now(), paused: false, isVIP: false }])}
-                                onDelete={id => setKeysData(keysData.filter(k => k.id !== id))}
-                                onTogglePause={id => setKeysData(keysData.map(k => k.id === id ? { ...k, paused: !k.paused } : k))}
-                                onToggleVIP={id => setKeysData(keysData.map(k => k.id === id ? { ...k, isVIP: !k.isVIP } : k))}
+                                onAdd={k => { isLocalChange.current = true; setKeysData([...keysData, { ...k, id: Date.now(), paused: false, isVIP: false }]); }}
+                                onDelete={id => { isLocalChange.current = true; setKeysData(keysData.filter(k => k.id !== id)); }}
+                                onTogglePause={id => { isLocalChange.current = true; setKeysData(keysData.map(k => k.id === id ? { ...k, paused: !k.paused } : k)); }}
+                                onToggleVIP={id => { isLocalChange.current = true; setKeysData(keysData.map(k => k.id === id ? { ...k, isVIP: !k.isVIP } : k)); }}
                                 currentUser={currentUser}
                                 adminCreds={adminUserCreds}
                                 setAdminCreds={setAdminUserCreds}
@@ -1127,6 +1133,7 @@ input, select { padding: 0.8rem 1rem; border-radius: 10px; border: 1px solid var
                                 onEdit={(item) => { setEditingItem(item); setActivePage(item.type || 'central'); window.scrollTo({top:0, behavior:'smooth'}); }}
                                 onDelete={(id, type) => {
                                     if(confirm('Delete this entry?')) {
+                                        isLocalChange.current = true;
                                         if (type === 'central') setCentralData(centralData.filter(i => i.id !== id));
                                         else if (type === 'university') setUniData(uniData.filter(i => i.id !== id));
                                         else setUniScholData(uniScholData.filter(i => i.id !== id));
