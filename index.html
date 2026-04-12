@@ -631,6 +631,15 @@ input, select { padding: 0.8rem 1rem; border-radius: 10px; border: 1px solid var
             };
 
             const syncToGitHub = async (updates) => {
+                // 1. Update local state IMMEDIATELY for instant UI
+                if (updates.central !== undefined) setCentralData(updates.central);
+                if (updates.university !== undefined) setUniData(updates.university);
+                if (updates.uni_schol !== undefined) setUniScholData(updates.uni_schol);
+                if (updates.keys !== undefined) setKeysData(updates.keys);
+                if (updates.admin_creds !== undefined) setAdminUserCreds(updates.admin_creds);
+                if (updates.user_prefs !== undefined) setUserPrefs(updates.user_prefs);
+
+                // 2. Then sync to GitHub in background
                 setSyncStatus('Syncing...');
                 try {
                     const fullData = {
@@ -642,14 +651,12 @@ input, select { padding: 0.8rem 1rem; border-radius: 10px; border: 1px solid var
                         user_prefs: updates.user_prefs !== undefined ? updates.user_prefs : userPrefs
                     };
 
-                    // 1. Get current SHA
                     const res = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.path}?t=${Date.now()}`, {
                         headers: { Authorization: `token ${GITHUB_CONFIG.token}` }
                     });
                     const fileData = await res.json();
                     if (!fileData.sha) throw new Error("Could not get file SHA");
 
-                    // 2. Push to GitHub FIRST
                     const putRes = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.path}`, {
                         method: 'PUT',
                         headers: {
@@ -665,14 +672,6 @@ input, select { padding: 0.8rem 1rem; border-radius: 10px; border: 1px solid var
                     });
                     
                     if (putRes.ok) {
-                        // 3. Only update local state AFTER GitHub sync succeeds
-                        if (updates.central !== undefined) setCentralData(updates.central);
-                        if (updates.university !== undefined) setUniData(updates.university);
-                        if (updates.uni_schol !== undefined) setUniScholData(updates.uni_schol);
-                        if (updates.keys !== undefined) setKeysData(updates.keys);
-                        if (updates.admin_creds !== undefined) setAdminUserCreds(updates.admin_creds);
-                        if (updates.user_prefs !== undefined) setUserPrefs(updates.user_prefs);
-                        
                         console.log("Successfully synced to GitHub.");
                         setSyncStatus('Updated ✓');
                         setTimeout(() => setSyncStatus('Online'), 3000);
