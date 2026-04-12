@@ -62,8 +62,8 @@
       "id": 1775821215496,
       "paused": false,
       "isVIP": true,
-      "last_active": "2026-04-12T05:59:38.018Z",
-      "login_count": 4
+      "last_active": "2026-04-12T05:59:41.743Z",
+      "login_count": 3
     }
   ],
   "admin_creds": {
@@ -80,9 +80,7 @@
       "applied_keys": []
     },
     "user@gmail.com": {
-      "applied_keys": [
-        "central-1775895394493"
-      ]
+      "applied_keys": []
     }
   }
 }
