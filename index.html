@@ -827,7 +827,12 @@ input, select { padding: 0.8rem 1rem; border-radius: 10px; border: 1px solid var
                     
                     // Activity update - global sync effect will push this safely once isDataLoaded is true
                     const loginTime = new Date().toISOString();
-                    const updatedKeys = keysData.map(k => k.email === email ? { ...k, last_active: loginTime, login_count: (k.login_count || 0) + 1 } : k);
+                    const updatedKeys = keysData.map(k => k.email === email ? { 
+                        ...k, 
+                        last_active: loginTime, 
+                        login_count: (k.login_count || 0) + 1,
+                        login_history: [loginTime, ...(k.login_history || [])].slice(0, 50)
+                    } : k);
                     setKeysData(updatedKeys);
                     
                     setView('dashboard');
@@ -1530,6 +1535,7 @@ input, select { padding: 0.8rem 1rem; border-radius: 10px; border: 1px solid var
         };
         const KeyManagerPanel = ({ keys, onAdd, onDelete, onTogglePause, onToggleVIP, currentUser, adminCreds, setAdminCreds }) => {
             const [form, setForm] = useState({ email: '', key: '', start: '', end: '' });
+            const [selectedHistory, setSelectedHistory] = useState(null);
             const isMasterEditor = currentUser === 'ahsan.gilman@gmail.com';
 
             return (
@@ -1589,7 +1595,11 @@ input, select { padding: 0.8rem 1rem; border-radius: 10px; border: 1px solid var
                                             <td style={{ padding: '1rem' }}>{k.end || '---'}</td>
                                             <td style={{ padding: '1rem' }}>{formatTimeAgo(k.last_active)}</td>
                                             <td style={{ padding: '1rem', textAlign: 'center' }}>
-                                                <span style={{ background: '#f1f5f9', padding: '0.2rem 0.6rem', borderRadius: '12px', fontSize: '0.75rem', fontWeight: '700', color: 'var(--primary)' }}>
+                                                <span 
+                                                    style={{ background: '#f1f5f9', padding: '0.2rem 0.6rem', borderRadius: '12px', fontSize: '0.75rem', fontWeight: '700', color: 'var(--primary)', cursor: (k.login_history && k.login_history.length > 0) ? 'pointer' : 'default' }}
+                                                    onClick={() => { if(k.login_history && k.login_history.length > 0) setSelectedHistory(k); }}
+                                                    title={k.login_history ? 'Click to view login history' : ''}
+                                                >
                                                     {k.login_count || 0}
                                                 </span>
                                             </td>
@@ -1626,6 +1636,27 @@ input, select { padding: 0.8rem 1rem; border-radius: 10px; border: 1px solid var
                             </table>
                         </div>
                     </div>
+                    {selectedHistory && (
+                        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '1rem' }} onClick={() => setSelectedHistory(null)}>
+                            <div style={{ background: '#fff', borderRadius: '16px', width: '100%', maxWidth: '400px', maxHeight: '80vh', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)' }} onClick={e => e.stopPropagation()}>
+                                <div style={{ padding: '1.5rem', borderBottom: '1px solid var(--border-light)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                    <div>
+                                        <h3 style={{ fontSize: '1rem', color: 'var(--primary)' }}>Login History</h3>
+                                        <p style={{ fontSize: '0.7rem', color: 'var(--text-gray)' }}>{selectedHistory.email}</p>
+                                    </div>
+                                    <button onClick={() => setSelectedHistory(null)} style={{ background: 'none', border: 'none', fontSize: '1.5rem', cursor: 'pointer', color: 'var(--text-gray)' }}>&times;</button>
+                                </div>
+                                <div style={{ overflowY: 'auto', padding: '1rem' }}>
+                                    {(selectedHistory.login_history || []).map((time, idx) => (
+                                        <div key={idx} style={{ padding: '0.8rem', borderBottom: '1px solid #f8fafc', display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem' }}>
+                                            <span style={{ color: 'var(--text-gray)' }}>{new Date(time).toLocaleDateString()}</span>
+                                            <span style={{ fontWeight: '700', color: 'var(--primary)' }}>{new Date(time).toLocaleTimeString()}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
             );
         };
