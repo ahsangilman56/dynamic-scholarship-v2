@@ -600,14 +600,18 @@ input, select { padding: 0.8rem 1rem; border-radius: 10px; border: 1px solid var
                             return [...localNew, ...server];
                         };
 
+                        // DATA CHANGE GUARD: Only update state if server data differs from local state
+                        // This prevents "shivering" by skipping unnecessary React rerenders every 3s
+                        const hasChanged = (s, l) => JSON.stringify(s) !== JSON.stringify(l);
+
                         // If no local changes are pending, perform a "Hard Update" (Cloud is Source of Truth)
                         if (!isLocalChange.current) {
-                            if (data.central) setCentralData(data.central);
-                            if (data.university) setUniData(data.university);
-                            if (data.uni_schol) setUniScholData(data.uni_schol);
-                            if (data.keys) setKeysData(data.keys);
-                            if (data.admin_creds) setAdminUserCreds(data.admin_creds);
-                            if (data.user_prefs) setUserPrefs(data.user_prefs);
+                            if (data.central && hasChanged(data.central, centralData)) setCentralData(data.central);
+                            if (data.university && hasChanged(data.university, uniData)) setUniData(data.university);
+                            if (data.uni_schol && hasChanged(data.uni_schol, uniScholData)) setUniScholData(data.uni_schol);
+                            if (data.keys && hasChanged(data.keys, keysData)) setKeysData(data.keys);
+                            if (data.admin_creds && hasChanged(data.admin_creds, adminUserCreds)) setAdminUserCreds(data.admin_creds);
+                            if (data.user_prefs && hasChanged(data.user_prefs, userPrefs)) setUserPrefs(data.user_prefs);
                         } else {
                             // Merge if we have unsaved local changes
                             if (data.central) setCentralData(prev => protectLocal(prev, data.central));
@@ -650,48 +654,39 @@ input, select { padding: 0.8rem 1rem; border-radius: 10px; border: 1px solid var
                 }
             };
 
-            const syncToGitHub = async (fullData) => {
+            const syncToGitHub = async (data) => {
+                if (!isLoggedIn) return;
                 setSyncStatus('Syncing...');
                 try {
+                    // 1. Get current SHA
                     const res = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.path}?t=${Date.now()}`, {
                         headers: { Authorization: `token ${GITHUB_CONFIG.token}` }
                     });
-                    const fileData = await res.json();
-                    if (!fileData.sha) throw new Error("Could not get file SHA");
-
+                    if (!res.ok) throw new Error('Fetch failed');
+                    const meta = await res.json();
+                    
+                    // 2. Put updated data
                     const putRes = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.path}`, {
                         method: 'PUT',
                         headers: {
                             Authorization: `token ${GITHUB_CONFIG.token}`,
-                            'Content-Type': 'application/json',
+                            'Content-Type': 'application/json'
                         },
                         body: JSON.stringify({
-                            message: `Activity Update — ${currentUser || 'System'}`,
-                            content: btoa(unescape(encodeURIComponent(JSON.stringify(fullData, null, 2)))),
-                            sha: fileData.sha,
+                            message: `Activity Update ${new Date().toISOString()}`,
+                            content: btoa(unescape(encodeURIComponent(JSON.stringify(data, null, 2)))),
+                            sha: meta.sha,
                             branch: GITHUB_CONFIG.branch
                         })
                     });
-                    
-                    if (putRes.ok) {
-                        console.log("Successfully synced to GitHub.");
-                        setSyncStatus('Updated ✓');
-                        setTimeout(() => setSyncStatus('Online'), 3000);
-                    }
-                    else throw new Error("Sync failed with status " + putRes.status);
+                    if (!putRes.ok) throw new Error("Sync failed with status " + putRes.status);
+                    setSyncStatus('Online');
                 } catch (err) {
                     console.error("Sync failed:", err);
                     setSyncStatus('Offline / Error');
                 }
             };
 
-            // Automated Polling (Global Update)
-            useEffect(() => {
-                const interval = setInterval(() => {
-                    fetchData(true); // Always force refresh from server for cross-device sync
-                }, 60000); // Polling every 60 seconds
-                return () => clearInterval(interval);
-            }, [currentUser]);
 
             const resetFromServer = () => {
                 if (confirm('Warning: This will discard ALL your local unsaved edits and reset the portal to the version currently on GitHub. Proceed?')) {
@@ -717,9 +712,6 @@ input, select { padding: 0.8rem 1rem; border-radius: 10px; border: 1px solid var
             };
 
 
-            useEffect(() => {
-                fetchData(true);
-            }, []);
 
 
 
@@ -735,11 +727,12 @@ input, select { padding: 0.8rem 1rem; border-radius: 10px; border: 1px solid var
             useEffect(() => {
                 if (!isLoggedIn) return;
 
-                // Instant fetch on mount or visibility change (Silent)
+                // Instant fetch on mount (Silent)
                 fetchData(true, true);
 
                 const handleVisibility = () => {
-                    if (document.visibilityState === 'visible') {
+                    // Only poll if no local change is currently being pushed (prevents flicker)
+                    if (document.visibilityState === 'visible' && !isLocalChange.current) {
                         fetchData(true, true);
                     }
                 };
@@ -747,13 +740,13 @@ input, select { padding: 0.8rem 1rem; border-radius: 10px; border: 1px solid var
 
                 // High-frequency polling (Safe 3s when active, 60s when background)
                 let pollInterval = setInterval(() => {
-                    if (document.visibilityState === 'visible') {
+                    if (document.visibilityState === 'visible' && !isLocalChange.current) {
                         fetchData(true, true);
                     }
                 }, 3000);
 
                 const backgroundPoll = setInterval(() => {
-                    if (document.visibilityState !== 'visible') {
+                    if (document.visibilityState !== 'visible' && !isLocalChange.current) {
                         fetchData(true, true);
                     }
                 }, 60000);
@@ -783,7 +776,7 @@ input, select { padding: 0.8rem 1rem; border-radius: 10px; border: 1px solid var
                 localStorage.setItem('user_apps_v1', JSON.stringify(appliedKeys));
 
                 // Immediate background sync to GitHub
-                // ONLY push if we have successfully fetched the latest server data first
+                // PUSH LOCK: Keep isLocalChange active until sync completes to prevent background polls from reverting UI
                 if (isLoggedIn && isDataLoaded && isLocalChange.current) {
                     const fullData = {
                         central: centralData,
@@ -793,8 +786,12 @@ input, select { padding: 0.8rem 1rem; border-radius: 10px; border: 1px solid var
                         admin_creds: adminUserCreds,
                         user_prefs: userPrefs
                     };
-                    syncToGitHub(fullData);
-                    isLocalChange.current = false;
+                    syncToGitHub(fullData).then(() => {
+                        // Small cooldown to let GitHub state settle before accepting incoming polls
+                        setTimeout(() => {
+                            isLocalChange.current = false;
+                        }, 1000);
+                    });
                 }
             }, [centralData, uniData, uniScholData, keysData, adminUserCreds, userPrefs, appliedKeys]);
 
