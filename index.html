@@ -915,6 +915,15 @@ input, select { padding: 0.8rem 1rem; border-radius: 10px; border: 1px solid var
                                     <li className={`nav-link ${activePage === 'keys' ? 'active' : ''}`} style={{ color: 'var(--success)' }} onClick={() => { setSortBy('All'); setActivePage('keys'); setSortBy('All'); setEditingItem(null); setIsMenuOpen(false); }}>Key Manager</li>
                                 )}
                                 <li className="nav-mobile-only">
+                                    {isVIP && !isAdmin && (
+                                        <button 
+                                            className={`btn ${vipEditMode ? 'btn-primary' : 'btn-outline'}`} 
+                                            style={{width:'100%', marginBottom:'0.5rem'}}
+                                            onClick={() => setVipEditMode(!vipEditMode)}
+                                        >
+                                            {vipEditMode ? '✓ EDITING ON' : 'VIEW MODE'}
+                                        </button>
+                                    )}
                                     <button className="btn btn-outline" style={{width:'100%', marginBottom:'0.5rem'}} onClick={() => { setActivePage('search'); setIsMenuOpen(false); }}>Advanced Search</button>
                                     <button className="btn btn-outline" style={{width:'100%', marginBottom:'0.5rem'}} onClick={() => { setShowKeySearch(!showKeySearch); setIsMenuOpen(false); }}>Keyword Search</button>
                                     <button className="btn btn-primary" style={{ width: '100%', marginTop: '1rem' }} onClick={() => {
