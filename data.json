@@ -52,7 +52,14 @@
     }
   ],
   "university": [],
-  "uni_schol": [],
+  "uni_schol": [
+    {
+      "ol_required": "No",
+      "degree": "MS",
+      "university": "Ft",
+      "id": 1775974447825
+    }
+  ],
   "keys": [
     {
       "email": "user@gmail.com",
@@ -62,8 +69,8 @@
       "id": 1775821215496,
       "paused": false,
       "isVIP": true,
-      "last_active": "2026-04-12T05:59:41.743Z",
-      "login_count": 3
+      "last_active": "2026-04-12T06:13:54.266Z",
+      "login_count": 4
     }
   ],
   "admin_creds": {
