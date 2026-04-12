@@ -555,6 +555,7 @@ input, select { padding: 0.8rem 1rem; border-radius: 10px; border: 1px solid var
             const [keywordQuery, setKeywordQuery] = useState('');
             const [isLoading, setIsLoading] = useState(false);
             const [syncStatus, setSyncStatus] = useState('Online');
+            const [isDataLoaded, setIsDataLoaded] = useState(false);
 
             // Persistence
             const [centralData, setCentralData] = useState(() => JSON.parse(localStorage.getItem('cs_data_v2')) || []);
@@ -589,12 +590,22 @@ input, select { padding: 0.8rem 1rem; border-radius: 10px; border: 1px solid var
                     const data = await res.json();
                     
                     if (force) {
-                        if (data.central) setCentralData(data.central);
-                        if (data.university) setUniData(data.university);
-                        if (data.uni_schol) setUniScholData(data.uni_schol);
+                        // Smart Overwrite: Preserves local additions that haven't hit the server yet (within a 5-minute window)
+                        // to prevent "flickering" where a newly added item disappears during API lag.
+                        const fiveMinsAgo = Date.now() - (5 * 60 * 1000);
+                        const protectLocal = (local, server) => {
+                            const serverIds = new Set(server.map(i => i.id));
+                            const localNew = local.filter(i => !serverIds.has(i.id) && i.id > fiveMinsAgo);
+                            return [...localNew, ...server]; // New local items at top, then server items
+                        };
+
+                        if (data.central) setCentralData(prev => protectLocal(prev, data.central));
+                        if (data.university) setUniData(prev => protectLocal(prev, data.university));
+                        if (data.uni_schol) setUniScholData(prev => protectLocal(prev, data.uni_schol));
                         if (data.keys) setKeysData(data.keys);
                         if (data.admin_creds) setAdminUserCreds(data.admin_creds);
                         if (data.user_prefs) setUserPrefs(data.user_prefs);
+                        setIsDataLoaded(true); // Signal that we have fresh server data
                     } else {
                         if (data.central) setCentralData(prev => mergeData(prev, data.central));
                         if (data.university) setUniData(prev => mergeData(prev, data.university));
@@ -729,7 +740,8 @@ input, select { padding: 0.8rem 1rem; border-radius: 10px; border: 1px solid var
                 localStorage.setItem('user_apps_v1', JSON.stringify(appliedKeys));
 
                 // Immediate background sync to GitHub
-                if (isLoggedIn) {
+                // ONLY push if we have successfully fetched the latest server data first
+                if (isLoggedIn && isDataLoaded) {
                     const fullData = {
                         central: centralData,
                         university: uniData,
@@ -813,10 +825,9 @@ input, select { padding: 0.8rem 1rem; border-radius: 10px; border: 1px solid var
                     setVipEditMode(false); // VIP users start in View Mode
                     setCurrentUser(email);
                     
-                    // Immediate activity update
+                    // Activity update - global sync effect will push this safely once isDataLoaded is true
                     const loginTime = new Date().toISOString();
                     const updatedKeys = keysData.map(k => k.email === email ? { ...k, last_active: loginTime, login_count: (k.login_count || 0) + 1 } : k);
-                    syncToGitHub({ keys: updatedKeys });
                     setKeysData(updatedKeys);
                     
                     setView('dashboard');
@@ -837,9 +848,9 @@ input, select { padding: 0.8rem 1rem; border-radius: 10px; border: 1px solid var
                     setEditingItem(null);
                 } else {
                     const item = { ...data, id: Date.now() };
-                    if (activePage === 'central') setCentralData([...centralData, item]);
-                    else if (activePage === 'university') setUniData([...uniData, item]);
-                    else setUniScholData([...uniScholData, item]);
+                    if (activePage === 'central') setCentralData([item, ...centralData]);
+                    else if (activePage === 'university') setUniData([item, ...uniData]);
+                    else setUniScholData([item, ...uniScholData]);
                 }
             };
 
@@ -947,25 +958,27 @@ input, select { padding: 0.8rem 1rem; border-radius: 10px; border: 1px solid var
                             <div className="nav-actions">
                                 {isLoggedIn && (
                                     <div style={{
-                                        fontSize: '0.65rem',
-                                        fontWeight: '800',
-                                        color: syncStatus === 'Online' ? 'var(--text-gray)' : syncStatus === 'Syncing...' ? 'var(--primary)' : syncStatus === 'Updated ✓' ? 'var(--success)' : 'var(--danger)',
-                                        background: syncStatus === 'Online' ? '#f1f5f9' : syncStatus === 'Syncing...' ? '#e0e7ff' : syncStatus === 'Updated ✓' ? '#dcfce7' : '#fee2e2',
-                                        padding: '0.4rem 0.8rem',
-                                        borderRadius: '12px',
+                                        fontSize: '0.6rem',
+                                        fontWeight: '900',
+                                        color: '#fff',
+                                        background: (syncStatus === 'Online' || syncStatus === 'Updated ✓' || syncStatus === 'Syncing...') ? 'var(--success)' : 'var(--danger)',
+                                        padding: '0.3rem 0.7rem',
+                                        borderRadius: '8px',
                                         display: 'flex',
                                         alignItems: 'center',
                                         gap: '0.4rem',
                                         marginRight: '0.5rem',
                                         transition: 'all 0.3s ease',
-                                        boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.02)'
+                                        textTransform: 'uppercase',
+                                        letterSpacing: '0.5px',
+                                        boxShadow: (syncStatus === 'Online' || syncStatus === 'Updated ✓' || syncStatus === 'Syncing...') ? '0 2px 8px rgba(5, 150, 105, 0.2)' : '0 2px 8px rgba(222, 56, 80, 0.2)'
                                     }}>
                                         <span style={{
                                             width: '6px', height: '6px', borderRadius: '50%',
-                                            background: syncStatus === 'Online' ? '#94a3b8' : syncStatus === 'Syncing...' ? 'var(--primary)' : syncStatus === 'Updated ✓' ? 'var(--success)' : 'var(--danger)',
+                                            background: '#fff',
                                             animation: syncStatus === 'Syncing...' ? 'pulse 1s infinite' : 'none'
                                         }}></span>
-                                        {syncStatus}
+                                        {(syncStatus === 'Online' || syncStatus === 'Updated ✓' || syncStatus === 'Syncing...') ? 'LIVE' : 'OFFLINE'}
                                     </div>
                                 )}
                                 {isVIP && !isAdmin && (
@@ -1505,7 +1518,7 @@ input, select { padding: 0.8rem 1rem; border-radius: 10px; border: 1px solid var
                         })}
                     </div>
                     <div style={{ display: 'flex', gap: '1rem', marginTop: '2rem', justifyContent: 'flex-end' }}>
-                        <button className="btn btn-primary" style={{ padding: '0 2rem', height: '48px', background: editingItem ? 'var(--primary)' : 'var(--success)' }} onClick={() => { onAdd(form); }}>
+                        <button className="btn btn-primary" style={{ padding: '0 2rem', height: '48px', background: editingItem ? 'var(--primary)' : 'var(--success)' }} onClick={() => { onAdd(form); if(!editingItem) setForm({ ol_required: 'No', degree: 'MS' }); }}>
                             {editingItem ? 'Update Item' : 'Save Entry'}
                         </button>
                         {editingItem && (
