@@ -339,12 +339,19 @@ input, select { padding: 0.8rem 1rem; border-radius: 10px; border: 1px solid var
   .page-title h1 { font-size: 1.8rem !important; letter-spacing: -1px; }
   .page-title p { font-size: 0.85rem !important; }
   
+  /* Ultra-compact Mobile Cards */
+  .card-grid { gap: 0.5rem !important; }
+  .scholarship-card { padding: 0.5rem 0.75rem !important; gap: 0.25rem !important; border-radius: 8px !important; }
+  .scholarship-card h3 { font-size: 0.85rem !important; line-height: 1.1 !important; margin-bottom: 0 !important; }
+  .scholarship-card > div { gap: 0.4rem !important; align-items: center !important; }
+  .scholarship-card .btn { height: 24px !important; padding: 0 0.6rem !important; font-size: 0.55rem !important; }
   .card-info { 
-    grid-template-columns: 1fr !important; /* Stack details on mobile */
-    gap: 0.5rem !important;
+    grid-template-columns: 1fr !important;
+    gap: 0.15rem !important;
   }
-  .card-info li { flex-direction: row !important; justify-content: space-between; align-items: center; border-bottom: 1px solid #f8fafc; padding-bottom: 0.3rem; }
-  .card-info li b { text-align: right; max-width: 60%; }
+  .card-info li { flex-direction: row !important; justify-content: space-between; align-items: center; border-bottom: 1px solid #f8fafc; padding-bottom: 0.1rem !important; }
+  .card-info li span { font-size: 0.55rem !important; }
+  .card-info li b { text-align: right; max-width: 65%; font-size: 0.65rem !important; line-height: 1.1; }
 
   /* Admin & Form Refinements */
   .admin-section { padding: 1.5rem !important; border-radius: 20px !important; margin: 1.5rem 0 !important; }
