@@ -600,29 +600,34 @@ input, select { padding: 0.8rem 1rem; border-radius: 10px; border: 1px solid var
                             return [...localNew, ...server];
                         };
 
-                        if (data.central) { isLocalChange.current = false; setCentralData(prev => protectLocal(prev, data.central)); }
-                        if (data.university) { isLocalChange.current = false; setUniData(prev => protectLocal(prev, data.university)); }
-                        if (data.uni_schol) { isLocalChange.current = false; setUniScholData(prev => protectLocal(prev, data.uni_schol)); }
-                        if (data.keys) { isLocalChange.current = false; setKeysData(data.keys); }
-                        if (data.admin_creds) { isLocalChange.current = false; setAdminUserCreds(data.admin_creds); }
-                        if (data.user_prefs) {
-                            isLocalChange.current = false;
-                            setUserPrefs(prev => {
-                                const mergedUserPrefs = { ...data.user_prefs, ...prev };
-                                return mergedUserPrefs;
-                            });
+                        // If no local changes are pending, perform a "Hard Update" (Cloud is Source of Truth)
+                        if (!isLocalChange.current) {
+                            if (data.central) setCentralData(data.central);
+                            if (data.university) setUniData(data.university);
+                            if (data.uni_schol) setUniScholData(data.uni_schol);
+                            if (data.keys) setKeysData(data.keys);
+                            if (data.admin_creds) setAdminUserCreds(data.admin_creds);
+                            if (data.user_prefs) setUserPrefs(data.user_prefs);
+                        } else {
+                            // Merge if we have unsaved local changes
+                            if (data.central) setCentralData(prev => protectLocal(prev, data.central));
+                            if (data.university) setUniData(prev => protectLocal(prev, data.university));
+                            if (data.uni_schol) setUniScholData(prev => protectLocal(prev, data.uni_schol));
+                            if (data.keys) setKeysData(data.keys);
+                            if (data.admin_creds) setAdminUserCreds(data.admin_creds);
+                            if (data.user_prefs) setUserPrefs(prev => ({ ...data.user_prefs, ...prev }));
                         }
                         setIsDataLoaded(true);
+                        setSyncStatus('Updated ✓');
+                        setTimeout(() => setSyncStatus('Online'), 2000);
                     } else {
-                        if (data.central) { isLocalChange.current = false; setCentralData(prev => mergeData(prev, data.central)); }
-                        if (data.university) { isLocalChange.current = false; setUniData(prev => mergeData(prev, data.university)); }
-                        if (data.uni_schol) { isLocalChange.current = false; setUniScholData(prev => mergeData(prev, data.uni_schol)); }
-                        if (data.keys) { isLocalChange.current = false; setKeysData(prev => mergeData(prev, data.keys)); }
-                        if (data.admin_creds) { isLocalChange.current = false; setAdminUserCreds(data.admin_creds); }
-                        if (data.user_prefs) {
-                            isLocalChange.current = false;
-                            setUserPrefs(prev => ({ ...data.user_prefs, ...prev }));
-                        }
+                        // Merge logic for manual refreshes / non-forced pulls
+                        if (data.central) setCentralData(prev => mergeData(prev, data.central));
+                        if (data.university) setUniData(prev => mergeData(prev, data.university));
+                        if (data.uni_schol) setUniScholData(prev => mergeData(prev, data.uni_schol));
+                        if (data.keys) setKeysData(prev => mergeData(prev, data.keys));
+                        if (data.admin_creds) setAdminUserCreds(data.admin_creds);
+                        if (data.user_prefs) setUserPrefs(prev => ({ ...data.user_prefs, ...prev }));
                     }
                     
                     console.log(force ? "Database reset from GitHub." : "GitHub data merged successfully.");
@@ -724,6 +729,40 @@ input, select { padding: 0.8rem 1rem; border-radius: 10px; border: 1px solid var
             useEffect(() => { if (currentUser) localStorage.setItem('auth_user_email', currentUser); else localStorage.removeItem('auth_user_email'); }, [currentUser]);
 
             /* ── Sync applied keys only on initial login or user change ── */
+            // Ultra-Fast Adaptive Polling & Parity
+            useEffect(() => {
+                if (!isLoggedIn) return;
+
+                // Instant fetch on mount or visibility change
+                fetchData(true);
+
+                const handleVisibility = () => {
+                    if (document.visibilityState === 'visible') {
+                        fetchData(true);
+                    }
+                };
+                document.addEventListener('visibilitychange', handleVisibility);
+
+                // High-frequency polling (Safe 3s when active, 60s when background)
+                let pollInterval = setInterval(() => {
+                    if (document.visibilityState === 'visible') {
+                        fetchData(true);
+                    }
+                }, 3000);
+
+                const backgroundPoll = setInterval(() => {
+                    if (document.visibilityState !== 'visible') {
+                        fetchData(true);
+                    }
+                }, 60000);
+
+                return () => {
+                    document.removeEventListener('visibilitychange', handleVisibility);
+                    clearInterval(pollInterval);
+                    clearInterval(backgroundPoll);
+                };
+            }, [isLoggedIn]);
+
             useEffect(() => {
                 if (isLoggedIn && currentUser && userPrefs[currentUser]) {
                     setAppliedKeys(userPrefs[currentUser].applied_keys || []);
@@ -986,9 +1025,9 @@ input, select { padding: 0.8rem 1rem; border-radius: 10px; border: 1px solid var
                                         <span style={{
                                             width: '6px', height: '6px', borderRadius: '50%',
                                             background: '#fff',
-                                            animation: syncStatus === 'Syncing...' ? 'pulse 1s infinite' : 'none'
+                                            animation: (syncStatus === 'Syncing...' || syncStatus === 'Updated ✓') ? 'pulse 0.5s infinite' : 'none'
                                         }}></span>
-                                        {(syncStatus === 'Online' || syncStatus === 'Updated ✓' || syncStatus === 'Syncing...') ? 'LIVE' : 'OFFLINE'}
+                                        {syncStatus === 'Updated ✓' ? 'PARITY OK' : (syncStatus === 'Online' ? 'LIVE' : syncStatus)}
                                     </div>
                                 )}
                                 {isVIP && !isAdmin && (
