@@ -561,9 +561,11 @@ input, select { padding: 0.8rem 1rem; border-radius: 10px; border: 1px solid var
 
             // Data Persistence Logic
             const mergeData = (local, server) => {
+                const serverIdMap = new Map(server.map(i => [i.id, i]));
+                const mergedLocal = local.map(i => serverIdMap.has(i.id) ? serverIdMap.get(i.id) : i);
                 const localIds = new Set(local.map(i => i.id));
                 const newItems = server.filter(i => !localIds.has(i.id));
-                return [...local, ...newItems];
+                return [...mergedLocal, ...newItems];
             };
 
             const fetchData = async (force = false) => {
@@ -691,7 +693,7 @@ input, select { padding: 0.8rem 1rem; border-radius: 10px; border: 1px solid var
 
 
             useEffect(() => {
-                fetchData();
+                fetchData(true);
             }, []);
 
 
@@ -773,7 +775,7 @@ input, select { padding: 0.8rem 1rem; border-radius: 10px; border: 1px solid var
                     setIsLoggedIn(true);
                     setIsMaster(true);
                     setIsAdmin(true);
-                    setVipEditMode(true); 
+                    setVipEditMode(false); 
                     setCurrentUser(email);
                     setView('dashboard');
                     return;
@@ -804,12 +806,12 @@ input, select { padding: 0.8rem 1rem; border-radius: 10px; border: 1px solid var
                     setIsMaster(false);
                     setIsAdmin(false);
                     setIsVIP(!!found.isVIP);
-                    setVipEditMode(!!found.isVIP); // VIP users start in Editing mode if their key allows it, otherwise View Mode
+                    setVipEditMode(false); // VIP users start in View Mode
                     setCurrentUser(email);
                     
                     // Immediate activity update
                     const loginTime = new Date().toISOString();
-                    const updatedKeys = keysData.map(k => k.email === email ? { ...k, last_active: loginTime } : k);
+                    const updatedKeys = keysData.map(k => k.email === email ? { ...k, last_active: loginTime, login_count: (k.login_count || 0) + 1 } : k);
                     setKeysData(updatedKeys);
                     
                     setView('dashboard');
@@ -1545,6 +1547,7 @@ input, select { padding: 0.8rem 1rem; border-radius: 10px; border: 1px solid var
                                         <th style={{ padding: '1rem' }}>Start</th>
                                         <th style={{ padding: '1rem' }}>End</th>
                                         <th style={{ padding: '1rem' }}>Last Active</th>
+                                        <th style={{ padding: '1rem' }}>Logins</th>
                                         <th style={{ padding: '1rem' }}>Editor</th>
                                         <th style={{ padding: '1rem' }}>Status</th>
                                         <th style={{ padding: '1rem' }}>Action</th>
@@ -1558,6 +1561,11 @@ input, select { padding: 0.8rem 1rem; border-radius: 10px; border: 1px solid var
                                             <td style={{ padding: '1rem' }}>{k.start || '---'}</td>
                                             <td style={{ padding: '1rem' }}>{k.end || '---'}</td>
                                             <td style={{ padding: '1rem' }}>{formatTimeAgo(k.last_active)}</td>
+                                            <td style={{ padding: '1rem', textAlign: 'center' }}>
+                                                <span style={{ background: '#f1f5f9', padding: '0.2rem 0.6rem', borderRadius: '12px', fontSize: '0.75rem', fontWeight: '700', color: 'var(--primary)' }}>
+                                                    {k.login_count || 0}
+                                                </span>
+                                            </td>
                                             <td style={{ padding: '1rem' }}>
                                                 <button 
                                                     className={`btn ${k.isVIP ? 'btn-primary' : 'btn-outline'}`}
