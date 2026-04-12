@@ -630,17 +630,26 @@ input, select { padding: 0.8rem 1rem; border-radius: 10px; border: 1px solid var
                 }
             };
 
-            const syncToGitHub = async (fullData) => {
+            const syncToGitHub = async (updates) => {
                 setSyncStatus('Syncing...');
                 try {
+                    const fullData = {
+                        central: updates.central !== undefined ? updates.central : centralData,
+                        university: updates.university !== undefined ? updates.university : uniData,
+                        uni_schol: updates.uni_schol !== undefined ? updates.uni_schol : uniScholData,
+                        keys: updates.keys !== undefined ? updates.keys : keysData,
+                        admin_creds: updates.admin_creds !== undefined ? updates.admin_creds : adminUserCreds,
+                        user_prefs: updates.user_prefs !== undefined ? updates.user_prefs : userPrefs
+                    };
+
                     // 1. Get current SHA
-                    const res = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.path}`, {
+                    const res = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.path}?t=${Date.now()}`, {
                         headers: { Authorization: `token ${GITHUB_CONFIG.token}` }
                     });
                     const fileData = await res.json();
                     if (!fileData.sha) throw new Error("Could not get file SHA");
 
-                    // 2. Put new content
+                    // 2. Push to GitHub FIRST
                     const putRes = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.path}`, {
                         method: 'PUT',
                         headers: {
@@ -656,14 +665,24 @@ input, select { padding: 0.8rem 1rem; border-radius: 10px; border: 1px solid var
                     });
                     
                     if (putRes.ok) {
+                        // 3. Only update local state AFTER GitHub sync succeeds
+                        if (updates.central !== undefined) setCentralData(updates.central);
+                        if (updates.university !== undefined) setUniData(updates.university);
+                        if (updates.uni_schol !== undefined) setUniScholData(updates.uni_schol);
+                        if (updates.keys !== undefined) setKeysData(updates.keys);
+                        if (updates.admin_creds !== undefined) setAdminUserCreds(updates.admin_creds);
+                        if (updates.user_prefs !== undefined) setUserPrefs(updates.user_prefs);
+                        
                         console.log("Successfully synced to GitHub.");
                         setSyncStatus('Updated ✓');
                         setTimeout(() => setSyncStatus('Online'), 3000);
+                        return true;
                     }
                     else throw new Error("Sync failed with status " + putRes.status);
                 } catch (err) {
-                    console.error("Auto-sync failed:", err);
+                    console.error("Sync failed:", err);
                     setSyncStatus('Offline / Error');
+                    return false;
                 }
             };
 
@@ -728,21 +747,7 @@ input, select { padding: 0.8rem 1rem; border-radius: 10px; border: 1px solid var
                 localStorage.setItem('auth_keys_v2', JSON.stringify(keysData));
                 localStorage.setItem('auth_admin_user_v1', JSON.stringify(adminUserCreds));
                 localStorage.setItem('user_prefs_v1', JSON.stringify(userPrefs));
-                localStorage.setItem('user_apps_v1', JSON.stringify(appliedKeys)); // Immediate local backup to prevent refresh wipes
-
-                // Auto-Sync Trigger
-                if (isLoggedIn) {
-                    const fullData = {
-                        central: centralData,
-                        university: uniData,
-                        uni_schol: uniScholData,
-                        keys: keysData,
-                        admin_creds: adminUserCreds,
-                        user_prefs: userPrefs
-                    };
-                    const timeoutId = setTimeout(() => syncToGitHub(fullData), 2000); // 2s debounce
-                    return () => clearTimeout(timeoutId);
-                }
+                localStorage.setItem('user_apps_v1', JSON.stringify(appliedKeys));
             }, [centralData, uniData, uniScholData, keysData, adminUserCreds, userPrefs, appliedKeys]);
 
             const displayData = useMemo(() => {
@@ -819,7 +824,7 @@ input, select { padding: 0.8rem 1rem; border-radius: 10px; border: 1px solid var
                     // Immediate activity update
                     const loginTime = new Date().toISOString();
                     const updatedKeys = keysData.map(k => k.email === email ? { ...k, last_active: loginTime, login_count: (k.login_count || 0) + 1 } : k);
-                    setKeysData(updatedKeys);
+                    syncToGitHub({ keys: updatedKeys });
                     
                     setView('dashboard');
                     return;
@@ -827,25 +832,25 @@ input, select { padding: 0.8rem 1rem; border-radius: 10px; border: 1px solid var
                 alert('Access Denied. Invalid Authorization.');
             };
 
-            const handleAddOrEdit = (data) => {
+            const handleAddOrEdit = async (data) => {
                 const canEdit = isAdmin || (isVIP && vipEditMode);
                 if (!canEdit) return;
                 
                 if (editingItem) {
                     const update = list => list.map(i => i.id === editingItem.id ? { ...data, id: i.id } : i);
-                    if (activePage === 'central') setCentralData(update);
-                    else if (activePage === 'university') setUniData(update);
-                    else setUniScholData(update);
+                    if (activePage === 'central') await syncToGitHub({ central: update(centralData) });
+                    else if (activePage === 'university') await syncToGitHub({ university: update(uniData) });
+                    else await syncToGitHub({ uni_schol: update(uniScholData) });
                     setEditingItem(null);
                 } else {
                     const item = { ...data, id: Date.now() };
-                    if (activePage === 'central') setCentralData([...centralData, item]);
-                    else if (activePage === 'university') setUniData([...uniData, item]);
-                    else setUniScholData([...uniScholData, item]);
+                    if (activePage === 'central') await syncToGitHub({ central: [...centralData, item] });
+                    else if (activePage === 'university') await syncToGitHub({ university: [...uniData, item] });
+                    else await syncToGitHub({ uni_schol: [...uniScholData, item] });
                 }
             };
 
-            const toggleApplied = (category, id) => {
+            const toggleApplied = async (category, id) => {
                 const itemKey = `${category}-${id}`;
                 const newApplied = appliedKeys.includes(itemKey)
                     ? appliedKeys.filter(k => k !== itemKey)
@@ -855,7 +860,7 @@ input, select { padding: 0.8rem 1rem; border-radius: 10px; border: 1px solid var
 
                 if (isLoggedIn && currentUser) {
                     const updatedPrefs = { ...userPrefs, [currentUser]: { applied_keys: newApplied } };
-                    setUserPrefs(updatedPrefs);
+                    await syncToGitHub({ user_prefs: updatedPrefs });
                 }
             };
 
@@ -1053,9 +1058,9 @@ input, select { padding: 0.8rem 1rem; border-radius: 10px; border: 1px solid var
                                             onEdit={() => { setEditingItem(item); setActivePage(item.type || 'central'); setShowKeySearch(false); window.scrollTo({top:0, behavior:'smooth'}); }}
                                             onDelete={id => {
                                                 if (confirm('Delete this entry?')) {
-                                                    if (item.type === 'central') setCentralData(centralData.filter(i => i.id !== id));
-                                                    else if (item.type === 'university') setUniData(uniData.filter(i => i.id !== id));
-                                                    else setUniScholData(uniScholData.filter(i => i.id !== id));
+                                                    if (item.type === 'central') syncToGitHub({ central: centralData.filter(i => i.id !== id) });
+                                                    else if (item.type === 'university') syncToGitHub({ university: uniData.filter(i => i.id !== id) });
+                                                    else syncToGitHub({ uni_schol: uniScholData.filter(i => i.id !== id) });
                                                 }
                                             }}
                                         />
@@ -1079,10 +1084,10 @@ input, select { padding: 0.8rem 1rem; border-radius: 10px; border: 1px solid var
                         {isAdmin && activePage === 'keys' && (
                             <KeyManagerPanel
                                 keys={keysData}
-                                onAdd={k => setKeysData([...keysData, { ...k, id: Date.now(), paused: false, isVIP: false }])}
-                                onDelete={id => setKeysData(keysData.filter(k => k.id !== id))}
-                                onTogglePause={id => setKeysData(keysData.map(k => k.id === id ? { ...k, paused: !k.paused } : k))}
-                                onToggleVIP={id => setKeysData(keysData.map(k => k.id === id ? { ...k, isVIP: !k.isVIP } : k))}
+                                onAdd={k => syncToGitHub({ keys: [...keysData, { ...k, id: Date.now(), paused: false, isVIP: false }] })}
+                                onDelete={id => syncToGitHub({ keys: keysData.filter(k => k.id !== id) })}
+                                onTogglePause={id => syncToGitHub({ keys: keysData.map(k => k.id === id ? { ...k, paused: !k.paused } : k) })}
+                                onToggleVIP={id => syncToGitHub({ keys: keysData.map(k => k.id === id ? { ...k, isVIP: !k.isVIP } : k) })}
                                 currentUser={currentUser}
                                 adminCreds={adminUserCreds}
                                 setAdminCreds={setAdminUserCreds}
@@ -1111,9 +1116,9 @@ input, select { padding: 0.8rem 1rem; border-radius: 10px; border: 1px solid var
                                 onEdit={(item) => { setEditingItem(item); setActivePage(item.type || 'central'); window.scrollTo({top:0, behavior:'smooth'}); }}
                                 onDelete={(id, type) => {
                                     if(confirm('Delete this entry?')) {
-                                        if (type === 'central') setCentralData(centralData.filter(i => i.id !== id));
-                                        else if (type === 'university') setUniData(uniData.filter(i => i.id !== id));
-                                        else setUniScholData(uniScholData.filter(i => i.id !== id));
+                                        if (type === 'central') syncToGitHub({ central: centralData.filter(i => i.id !== id) });
+                                        else if (type === 'university') syncToGitHub({ university: uniData.filter(i => i.id !== id) });
+                                        else syncToGitHub({ uni_schol: uniScholData.filter(i => i.id !== id) });
                                     }
                                 }}
                                 filters={searchFilters}
@@ -1163,9 +1168,9 @@ input, select { padding: 0.8rem 1rem; border-radius: 10px; border: 1px solid var
                                                                 onEdit={() => { setEditingItem(item); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
                                                                 onDelete={id => {
                                                                     if (confirm('Are you sure you want to delete this entry?')) {
-                                                                        if (item.type === 'central') setCentralData(centralData.filter(i => i.id !== id));
-                                                                        else if (item.type === 'university') setUniData(uniData.filter(i => i.id !== id));
-                                                                        else setUniScholData(uniScholData.filter(i => i.id !== id));
+                                                                        if (item.type === 'central') syncToGitHub({ central: centralData.filter(i => i.id !== id) });
+                                                                        else if (item.type === 'university') syncToGitHub({ university: uniData.filter(i => i.id !== id) });
+                                                                        else syncToGitHub({ uni_schol: uniScholData.filter(i => i.id !== id) });
                                                                     }
                                                                 }}
                                                             />
@@ -1188,9 +1193,9 @@ input, select { padding: 0.8rem 1rem; border-radius: 10px; border: 1px solid var
                                             onEdit={() => { setEditingItem(item); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
                                             onDelete={id => {
                                                 if (confirm('Are you sure you want to delete this entry?')) {
-                                                    if (activePage === 'central') setCentralData(centralData.filter(i => i.id !== id));
-                                                    else if (activePage === 'university') setUniData(uniData.filter(i => i.id !== id));
-                                                    else setUniScholData(uniScholData.filter(i => i.id !== id));
+                                                    if (activePage === 'central') syncToGitHub({ central: centralData.filter(i => i.id !== id) });
+                                                    else if (activePage === 'university') syncToGitHub({ university: uniData.filter(i => i.id !== id) });
+                                                    else syncToGitHub({ uni_schol: uniScholData.filter(i => i.id !== id) });
                                                 }
                                             }}
                                         />
