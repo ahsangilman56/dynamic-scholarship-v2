@@ -52,14 +52,7 @@
     }
   ],
   "university": [],
-  "uni_schol": [
-    {
-      "ol_required": "No",
-      "degree": "MS",
-      "university": "z",
-      "id": 1775973663028
-    }
-  ],
+  "uni_schol": [],
   "keys": [
     {
       "email": "user@gmail.com",
