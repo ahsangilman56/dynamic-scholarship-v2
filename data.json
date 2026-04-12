@@ -61,7 +61,12 @@
       "end": "",
       "id": 1775984578615,
       "paused": false,
-      "isVIP": true
+      "isVIP": true,
+      "last_active": "2026-04-12T09:03:48.167Z",
+      "login_count": 1,
+      "login_history": [
+        "2026-04-12T09:03:48.167Z"
+      ]
     }
   ],
   "admin_creds": {
