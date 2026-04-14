@@ -1227,8 +1227,9 @@ input, select { padding: 0.8rem 1rem; border-radius: 10px; border: 1px solid var
                                                                 canToggle={false}
                                                                 onToggle={toggleApplied}
                                                                 onEdit={() => { setEditingItem(item); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-                                                                onDelete={id => {
+                                                                 onDelete={id => {
                                                                     if (confirm('Are you sure you want to delete this entry?')) {
+                                                                        isLocalChange.current = true;
                                                                         if (item.type === 'central') setCentralData(centralData.filter(i => i.id !== id));
                                                                         else if (item.type === 'university') setUniData(uniData.filter(i => i.id !== id));
                                                                         else setUniScholData(uniScholData.filter(i => i.id !== id));
@@ -1254,6 +1255,7 @@ input, select { padding: 0.8rem 1rem; border-radius: 10px; border: 1px solid var
                                             onEdit={() => { setEditingItem(item); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
                                             onDelete={id => {
                                                 if (confirm('Are you sure you want to delete this entry?')) {
+                                                    isLocalChange.current = true;
                                                     if (activePage === 'central') setCentralData(centralData.filter(i => i.id !== id));
                                                     else if (activePage === 'university') setUniData(uniData.filter(i => i.id !== id));
                                                     else setUniScholData(uniScholData.filter(i => i.id !== id));
