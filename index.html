@@ -1316,7 +1316,7 @@ input, select { padding: 0.8rem 1rem; border-radius: 10px; border: 1px solid var
                         )}
 
                         {activePage === 'ai_chat' && (
-                            <ChatAssistant allData={allDataForKeyword} />
+                            <ChatAssistant allData={allDataForKeyword} appliedKeys={appliedKeys} />
                         )}
 
                         {activePage !== 'keys' && activePage !== 'search' && activePage !== 'ai_chat' && (
@@ -1432,7 +1432,7 @@ input, select { padding: 0.8rem 1rem; border-radius: 10px; border: 1px solid var
             );
         }
 
-        const ChatAssistant = ({ allData }) => {
+        const ChatAssistant = ({ allData, appliedKeys }) => {
             const [apiKey, setApiKey] = useState(() => localStorage.getItem('gemini_api_key') || '');
             const [tempKey, setTempKey] = useState('');
             const [messages, setMessages] = useState([{role: 'assistant', content: 'Hi! I am your AI assistant. How can I help you with scholarships today?'}]);
@@ -1456,7 +1456,14 @@ input, select { padding: 0.8rem 1rem; border-radius: 10px; border: 1px solid var
                 setIsLoading(true);
 
                 try {
-                    const contextStr = allData.map(d => `${d.type === 'central' ? 'Central' : 'Uni'}: ${d.name || d.university} in ${d.country || 'N/A'}. Degree: ${d.degree || 'N/A'}. Subject: ${d.subject || 'N/A'}. Facilities: ${d.facilities || 'N/A'}. Deadline: ${d.end || 'N/A'}`).join('\n');
+                    const contextStr = allData.map(d => {
+                        const isApplied = appliedKeys.includes(`${d.type}-${d.id}`);
+                        const details = Object.entries(d)
+                            .filter(([k]) => !['id', 'type'].includes(k))
+                            .map(([k, v]) => `${k}: ${v}`)
+                            .join(', ');
+                        return `Type: ${d.type}, ID: ${d.id}, Applied: ${isApplied ? 'Yes' : 'No'}, ${details}`;
+                    }).join('\n');
                     
                     const systemInstruction = `You are a helpful assistant for the Professor Outreach CRM. You answer questions based ONLY on the following available scholarship data:\n${contextStr}\n\nIf the answer is not in the data, clearly state that you don't know based on the available information. Keep your answers clear, concise, and helpful.`;
 
