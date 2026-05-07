@@ -723,6 +723,11 @@ input, select { padding: 0.8rem 1rem; border-radius: 10px; border: 1px solid var
             useEffect(() => { if (currentUser) localStorage.setItem('auth_user_email', currentUser); else localStorage.removeItem('auth_user_email'); }, [currentUser]);
 
             /* ── Sync applied keys only on initial login or user change ── */
+            // Fetch data immediately on load to ensure keys are available for login on new devices
+            useEffect(() => {
+                fetchData(true, true);
+            }, []);
+
             // Ultra-Fast Adaptive Polling & Parity
             useEffect(() => {
                 if (!isLoggedIn) return;
