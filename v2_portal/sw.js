@@ -1,4 +1,4 @@
-const CACHE_NAME = 'scholarship-local-v6';
+const CACHE_NAME = 'scholarship-local-v7';
 const ASSETS = [
   '/',
   '/index.html',
