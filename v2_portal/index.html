@@ -832,32 +832,35 @@ input, select { padding: 0.8rem 1rem; border-radius: 10px; border: 1px solid var
             }, [activePage, centralData, uniData, sortBy, appliedKeys, isMaster]);
 
             const handleLogin = async (email, key) => {
+                const cleanEmail = email.trim().toLowerCase();
+                const cleanKey = key.trim();
+
                 // Check Admin Editor (Full Management & Editing Access)
-                if (email === 'ahsan.gilman@gmail.com' && key === 'Ahsan@Gilman56#') {
+                if (cleanEmail === 'ahsan.gilman@gmail.com' && cleanKey === 'Ahsan@Gilman56#') {
                     setIsLoggedIn(true);
                     setIsMaster(true);
                     setIsAdmin(true);
                     setVipEditMode(false); 
-                    setCurrentUser(email);
+                    setCurrentUser(cleanEmail);
                     setView('dashboard');
                     return;
                 }
 
                 // Check Admin User (Universal Viewer - Read Only)
-                if (email === adminUserCreds.email && key === adminUserCreds.key) {
+                if (cleanEmail === adminUserCreds.email.toLowerCase() && cleanKey === adminUserCreds.key) {
                     setIsLoggedIn(true);
                     setIsMaster(true);
                     setIsAdmin(false);
                     setIsVIP(true); // Permanent Editor toggle for the secondary admin
                     setVipEditMode(false);
-                    setCurrentUser(email);
+                    setCurrentUser(cleanEmail);
                     setView('dashboard');
                     return;
                 }
 
                 // Check dynamic keys (General Guest Access)
                 let currentKeys = keysData;
-                let found = currentKeys.find(k => k.email === email && k.key === key);
+                let found = currentKeys.find(k => k.email.trim().toLowerCase() === cleanEmail && k.key.trim() === cleanKey);
 
                 // If not found locally, force a live check against GitHub (solves new device / cache issues)
                 if (!found) {
@@ -870,11 +873,14 @@ input, select { padding: 0.8rem 1rem; border-radius: 10px; border: 1px solid var
                             if (data.keys) {
                                 currentKeys = data.keys;
                                 setKeysData(data.keys);
-                                found = currentKeys.find(k => k.email === email && k.key === key);
+                                found = currentKeys.find(k => k.email.trim().toLowerCase() === cleanEmail && k.key.trim() === cleanKey);
                             }
+                        } else {
+                            alert("Notice: Could not fetch latest keys. Database returned status " + res.status);
                         }
                     } catch (e) {
                         console.warn("Live key check failed", e);
+                        alert("Network error: Could not verify live credentials. " + e.message);
                     }
                 }
 
